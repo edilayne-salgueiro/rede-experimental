@@ -1,4 +1,4 @@
-node n1 { 
+node n1 {  
     type router
     model PC
     network-config {
