@@ -1,0 +1,4515 @@
+node n1 {
+    type router
+    model PC
+    network-config {
+	hostname n1Client
+	!
+	interface eth0
+	 ip address 192.0.2.160/25
+	 ipv6 address 2001:db8:ca5a:2::2/64
+	!
+    }
+    canvas c1
+    iconcoords {195.33333333333331 186.66666666666666}
+    labelcoords {193.66666666666669 245.66666666666669}
+    interface-peer {eth0 n3}
+    custom-config {
+	custom-config-id service:UserDefined
+	custom-command UserDefined
+	config {
+	dirs=('/var/run/resolvconf', '/etc/resolvconf', )
+	files=('dns.sh', )
+	cmdup=('bash dns.sh', )
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:dns.sh
+	custom-command dns.sh
+	config {
+	#!/bin/bash
+	mkdir -p /var/run/resolvconf/interface
+	mkdir -p /etc/resolvconf/update.d
+	mkdir -p /etc/resolvconf/update-libc.d
+	mkdir -p /etc/resolvconf/resolv.conf.d
+	[ -f "/etc/resolvconf/resolv.conf.d/base" ] && rm -rf "/etc/resolvconf/resolv.conf.d/base"
+	touch /etc/resolvconf/resolv.conf.d/base
+	[ -L "/etc/resolvconf/resolv.conf.d/head" ] && unlink "/etc/resolvconf/resolv.conf.d/head"
+	ln -s base /etc/resolvconf/resolv.conf.d/head
+	[ -f "/etc/resolvconf/interface-order" ] && rm -rf "/etc/resolvconf/interface-order"
+	touch /etc/resolvconf/interface-order
+	echo '# interface-order(5)' >> /etc/resolvconf/interface-order
+	echo 'lo.inet*' >> /etc/resolvconf/interface-order
+	echo 'lo.dnsmasq' >> /etc/resolvconf/interface-order
+	echo 'lo.pdnsd' >> /etc/resolvconf/interface-order
+	echo 'lo.!(pdns|pdns-recursor)' >> /etc/resolvconf/interface-order
+	echo 'lo' >> /etc/resolvconf/interface-order
+	echo 'tun*' >> /etc/resolvconf/interface-order
+	echo 'tap*' >> /etc/resolvconf/interface-order
+	echo 'hso*' >> /etc/resolvconf/interface-order
+	echo 'em+([0-9])?(_+([0-9]))*' >> /etc/resolvconf/interface-order
+	echo 'p+([0-9])p+([0-9])?(_+([0-9]))*' >> /etc/resolvconf/interface-order
+	echo 'eth*' >> /etc/resolvconf/interface-order
+	echo 'ath*' >> /etc/resolvconf/interface-order
+	echo 'wlan*' >> /etc/resolvconf/interface-order
+	echo 'ppp*' >> /etc/resolvconf/interface-order
+	echo '*' >> /etc/resolvconf/interface-order
+	[ -f "/etc/resolvconf/update.d/libc" ] && rm -rf "/etc/resolvconf/update.d/libc"
+	touch /etc/resolvconf/update.d/libc
+	chmod 755 /etc/resolvconf/update.d/libc
+	echo '#!/bin/sh' >> /etc/resolvconf/update.d/libc
+	echo '#' >> /etc/resolvconf/update.d/libc
+	echo '# Script to update resolv.conf, the libc resolver configuration file,' >> /etc/resolvconf/update.d/libc
+	echo '# and to notify users of the libc resolver of changes' >> /etc/resolvconf/update.d/libc
+	echo '#' >> /etc/resolvconf/update.d/libc
+	echo '# Assumption: On entry, PWD contains the resolv.conf-type files.' >> /etc/resolvconf/update.d/libc
+	echo '#' >> /etc/resolvconf/update.d/libc
+	echo '# This script is part of the resolvconf package.' >> /etc/resolvconf/update.d/libc
+	echo '#' >> /etc/resolvconf/update.d/libc
+	echo '# Set REPORT_ABSENT_SYMLINK=no to inhibit warning message that' >> /etc/resolvconf/update.d/libc
+	echo '# /etc/resolv.conf is not a symbolic link' >> /etc/resolvconf/update.d/libc
+	echo '#' >> /etc/resolvconf/update.d/libc
+	echo '# Set TRUNCATE_NAMESERVER_LIST_AFTER_LOOPBACK_ADDRESS=no' >> /etc/resolvconf/update.d/libc
+	echo '# to allow additional nameserver addresses to be listed in' >> /etc/resolvconf/update.d/libc
+	echo '# resolv.conf after an initial loopback address 127.* or ::1.' >> /etc/resolvconf/update.d/libc
+	echo '#' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo 'set -e' >> /etc/resolvconf/update.d/libc
+	echo 'PATH=/sbin:/bin' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '[ -x /lib/resolvconf/list-records ] || exit 1' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '# Default override' >> /etc/resolvconf/update.d/libc
+	echo '[ -r /etc/default/resolvconf ] && . /etc/default/resolvconf' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo 'ETC=/etc' >> /etc/resolvconf/update.d/libc
+	echo 'ETCRESOLVCONF="${ETC}/resolvconf"' >> /etc/resolvconf/update.d/libc
+	echo 'RESOLVCONFDIR="${ETCRESOLVCONF}/resolv.conf.d"' >> /etc/resolvconf/update.d/libc
+	echo 'BASEFILE="${RESOLVCONFDIR}/base"' >> /etc/resolvconf/update.d/libc
+	echo 'HEADFILE="${RESOLVCONFDIR}/head"' >> /etc/resolvconf/update.d/libc
+	echo 'TAILFILE="${RESOLVCONFDIR}/tail"' >> /etc/resolvconf/update.d/libc
+	echo 'DYNAMICRSLVCNFFILE="/run/resolvconf/resolv.conf"' >> /etc/resolvconf/update.d/libc
+	echo 'TMPFILE="${DYNAMICRSLVCNFFILE}_new.$$"' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '# Set unset variables to their defaults' >> /etc/resolvconf/update.d/libc
+	echo 'if [ -z "$REPORT_ABSENT_SYMLINK" ] ; then' >> /etc/resolvconf/update.d/libc
+	echo '# '\''..._ALTERED_...'\'' is the old deprecated name for this variable' >> /etc/resolvconf/update.d/libc
+	echo 'if [ "$REPORT_ALTERED_SYMLINK" ] ; then' >> /etc/resolvconf/update.d/libc
+	echo 'REPORT_ABSENT_SYMLINK="$REPORT_ALTERED_SYMLINK"' >> /etc/resolvconf/update.d/libc
+	echo 'else' >> /etc/resolvconf/update.d/libc
+	echo '# Set to default value' >> /etc/resolvconf/update.d/libc
+	echo 'REPORT_ABSENT_SYMLINK=y' >> /etc/resolvconf/update.d/libc
+	echo 'fi' >> /etc/resolvconf/update.d/libc
+	echo 'fi' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo 'if [ -z "$TRUNCATE_NAMESERVER_LIST_AFTER_LOOPBACK_ADDRESS" ] ; then' >> /etc/resolvconf/update.d/libc
+	echo '# '\''..._127'\'' is the old deprecated name for this variable' >> /etc/resolvconf/update.d/libc
+	echo 'if [ "$TRUNCATE_NAMESERVER_LIST_AFTER_127" ] ; then' >> /etc/resolvconf/update.d/libc
+	echo 'TRUNCATE_NAMESERVER_LIST_AFTER_LOOPBACK_ADDRESS="$TRUNCATE_NAMESERVER_LIST_AFTER_127"' >> /etc/resolvconf/update.d/libc
+	echo 'else' >> /etc/resolvconf/update.d/libc
+	echo '# Set to default value' >> /etc/resolvconf/update.d/libc
+	echo 'TRUNCATE_NAMESERVER_LIST_AFTER_LOOPBACK_ADDRESS=y' >> /etc/resolvconf/update.d/libc
+	echo 'fi' >> /etc/resolvconf/update.d/libc
+	echo 'fi' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo 'report_warning() { echo "$0: Warning: $*" >&2 ; }' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo 'if [ ! -L ${ETC}/resolv.conf ] || [ ! "$(readlink -m ${ETC}/resolv.conf)" = "$DYNAMICRSLVCNFFILE" ] ; then' >> /etc/resolvconf/update.d/libc
+	echo 'case "$REPORT_ABSENT_SYMLINK" in' >> /etc/resolvconf/update.d/libc
+	echo 'y|Y|yes|YES|Yes)' >> /etc/resolvconf/update.d/libc
+	echo 'report_warning "${ETC}/resolv.conf is not a symbolic link to $DYNAMICRSLVCNFFILE"' >> /etc/resolvconf/update.d/libc
+	echo ';;' >> /etc/resolvconf/update.d/libc
+	echo 'esac' >> /etc/resolvconf/update.d/libc
+	echo 'fi' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '# Args are candidate items not containing spaces' >> /etc/resolvconf/update.d/libc
+	echo '# Returns RSLT -- space-separated list of items without duplicates' >> /etc/resolvconf/update.d/libc
+	echo '#' >> /etc/resolvconf/update.d/libc
+	echo '# Stores arguments (minus duplicates) in RSLT, separated by spaces' >> /etc/resolvconf/update.d/libc
+	echo 'uniquify()' >> /etc/resolvconf/update.d/libc
+	echo '{' >> /etc/resolvconf/update.d/libc
+	echo 'RSLT=""' >> /etc/resolvconf/update.d/libc
+	echo 'local D' >> /etc/resolvconf/update.d/libc
+	echo 'while [ "$1" ] ; do' >> /etc/resolvconf/update.d/libc
+	echo '# Remove the root domain suffix' >> /etc/resolvconf/update.d/libc
+	echo 'D="${1%.}"' >> /etc/resolvconf/update.d/libc
+	echo 'for E in $RSLT ; do' >> /etc/resolvconf/update.d/libc
+	echo '[ "$D" = "$E" ] && { shift ; continue 2 ; }' >> /etc/resolvconf/update.d/libc
+	echo 'done' >> /etc/resolvconf/update.d/libc
+	echo 'RSLT="${RSLT:+$RSLT }$D"' >> /etc/resolvconf/update.d/libc
+	echo 'shift' >> /etc/resolvconf/update.d/libc
+	echo 'done' >> /etc/resolvconf/update.d/libc
+	echo '}' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '# Args are candidate items not containing spaces' >> /etc/resolvconf/update.d/libc
+	echo '# Returns NSMSRVS -- space-separate list of no more than 3 items,' >> /etc/resolvconf/update.d/libc
+	echo '#                    without duplicates,' >> /etc/resolvconf/update.d/libc
+	echo '#                    truncated after loopback address if TRUNCATE_NAMESERVER_LIST_AFTER_LOOPBACK_ADDRESS set affirmatively' >> /etc/resolvconf/update.d/libc
+	echo 'uniquify_nameserver_list()' >> /etc/resolvconf/update.d/libc
+	echo '{' >> /etc/resolvconf/update.d/libc
+	echo 'NMSRVRS=""' >> /etc/resolvconf/update.d/libc
+	echo 'N=0' >> /etc/resolvconf/update.d/libc
+	echo 'while [ "$1" ] ; do' >> /etc/resolvconf/update.d/libc
+	echo 'for E in $NMSRVRS ; do' >> /etc/resolvconf/update.d/libc
+	echo '[ "$1" = "$E" ] && { shift ; continue 2 ; }' >> /etc/resolvconf/update.d/libc
+	echo 'done' >> /etc/resolvconf/update.d/libc
+	echo 'NMSRVRS="${NMSRVRS:+$NMSRVRS }$1"' >> /etc/resolvconf/update.d/libc
+	echo 'case "$TRUNCATE_NAMESERVER_LIST_AFTER_LOOPBACK_ADDRESS" in (y|Y|yes|YES|Yes) case "$1" in (127.*|::1) return 0 ;; esac ;; esac' >> /etc/resolvconf/update.d/libc
+	echo 'N=$(($N + 1))' >> /etc/resolvconf/update.d/libc
+	echo '[ "$N" = 3 ] && return 0' >> /etc/resolvconf/update.d/libc
+	echo 'shift' >> /etc/resolvconf/update.d/libc
+	echo 'done' >> /etc/resolvconf/update.d/libc
+	echo '}' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo 'RSLVCNFFILES="$(/lib/resolvconf/list-records)"' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '[ -f "$BASEFILE" ] && RSLVCNFFILES="$RSLVCNFFILES' >> /etc/resolvconf/update.d/libc
+	echo '$BASEFILE"' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '### Compile list of nameservers ###' >> /etc/resolvconf/update.d/libc
+	echo 'NMSRVRS=""' >> /etc/resolvconf/update.d/libc
+	echo 'if [ "$RSLVCNFFILES" ] ; then' >> /etc/resolvconf/update.d/libc
+	echo 'uniquify_nameserver_list $(sed -n '\''s/^[[:space:]]*nameserver[[:space:]]+//p'\'' $RSLVCNFFILES)' >> /etc/resolvconf/update.d/libc
+	echo 'fi' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '### Compile search list ###' >> /etc/resolvconf/update.d/libc
+	echo 'SRCHS=""' >> /etc/resolvconf/update.d/libc
+	echo 'if [ "$RSLVCNFFILES" ] ; then' >> /etc/resolvconf/update.d/libc
+	echo 'uniquify $(sed -n '\''s/^[[:space:]]*((search)|(domain))[[:space:]]+//p'\'' $RSLVCNFFILES)' >> /etc/resolvconf/update.d/libc
+	echo 'SRCHS="$RSLT"' >> /etc/resolvconf/update.d/libc
+	echo 'fi' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo 'clean_up() { rm -f "$TMPFILE" ; }' >> /etc/resolvconf/update.d/libc
+	echo 'trap clean_up EXIT' >> /etc/resolvconf/update.d/libc
+	echo 'clean_up' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '### Make the file ###' >> /etc/resolvconf/update.d/libc
+	echo ': > "$TMPFILE"' >> /etc/resolvconf/update.d/libc
+	echo '[ -f "$HEADFILE" ] && cat "$HEADFILE" >> "$TMPFILE"' >> /etc/resolvconf/update.d/libc
+	echo 'for N in $NMSRVRS ; do echo "nameserver $N" >> "$TMPFILE" ; done' >> /etc/resolvconf/update.d/libc
+	echo '[ "$SRCHS" ] && echo "search $SRCHS" >> "$TMPFILE"' >> /etc/resolvconf/update.d/libc
+	echo '[ "$RSLVCNFFILES" ] && sed -e '\''/^[[:space:]]*$/d'\'' -e '\''/^[[:space:]]*#/d'\'' -e '\''/^[[:space:]]*((nameserver)|(search)|(domain))[[:space:]]/d'\'' $RSLVCNFFILES >> "$TMPFILE" 2>/dev/null' >> /etc/resolvconf/update.d/libc
+	echo '[ -f "$TAILFILE" ] && cat "$TAILFILE" >> "$TMPFILE"' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '### Put the file in place ###' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo 'if [ -f "$DYNAMICRSLVCNFFILE" ] && [ "$(cat $TMPFILE)" = "$(cat $DYNAMICRSLVCNFFILE)" ] ; then' >> /etc/resolvconf/update.d/libc
+	echo '# The file has not changed' >> /etc/resolvconf/update.d/libc
+	echo 'rm -f "$TMPFILE"' >> /etc/resolvconf/update.d/libc
+	echo 'exit 0' >> /etc/resolvconf/update.d/libc
+	echo 'fi' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '# The file has changed' >> /etc/resolvconf/update.d/libc
+	echo 'mv -f "$TMPFILE" "$DYNAMICRSLVCNFFILE"' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '# Restart nscd' >> /etc/resolvconf/update.d/libc
+	echo 'NSCD_RESTARTED=""' >> /etc/resolvconf/update.d/libc
+	echo 'NSCD_PIDFILE=""' >> /etc/resolvconf/update.d/libc
+	echo '[ -s /var/run/nscd.pid ] && NSCD_PIDFILE="/var/run/nscd.pid"' >> /etc/resolvconf/update.d/libc
+	echo '[ -s /var/run/nscd/nscd.pid ] && NSCD_PIDFILE="/var/run/nscd/nscd.pid"' >> /etc/resolvconf/update.d/libc
+	echo 'if 	[ "$NSCD_PIDFILE" ] 	&& [ -x /usr/sbin/nscd ] 	&& [ -x /etc/init.d/nscd ] 	&& [ -s /etc/nscd.conf ] 	&& grep -q '\''[[:space:]]*enable-cache[[:space:]]+hosts[[:space:]]+yes'\'' /etc/nscd.conf 	&& start-stop-daemon --stop --quiet --pidfile="$NSCD_PIDFILE" --exec /usr/sbin/nscd --retry=TERM/3/HUP/5 	&& start-stop-daemon --stop --quiet --oknodo --exec /usr/sbin/nscd --retry=0/5' >> /etc/resolvconf/update.d/libc
+	echo 'then' >> /etc/resolvconf/update.d/libc
+	echo 'echo "Stopped Name Service Cache Daemon: nscd."' >> /etc/resolvconf/update.d/libc
+	echo '/etc/init.d/nscd start && { sleep 0.1 ; NSCD_RESTARTED=yes ; }' >> /etc/resolvconf/update.d/libc
+	echo 'fi' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo '# Notify users of the resolver' >> /etc/resolvconf/update.d/libc
+	echo 'if [ -d "${ETCRESOLVCONF}/update-libc.d" ] ; then' >> /etc/resolvconf/update.d/libc
+	echo 'exec run-parts ${NSCD_RESTARTED:+--arg="--nscd"} "${ETCRESOLVCONF}/update-libc.d"' >> /etc/resolvconf/update.d/libc
+	echo 'fi' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	echo 'exit 0' >> /etc/resolvconf/update.d/libc
+	echo >> /etc/resolvconf/update.d/libc
+	resolvconf --create-runtime-directories
+	echo 'nameserver 2001:db8:ca5a:1::2' > /var/run/resolvconf/interface/eth0.inet6
+	echo 'nameserver 192.0.2.100' > /var/run/resolvconf/interface/eth0.inet
+	resolvconf -u
+	resolvconf --enable-updates
+	}
+    }
+    services {DefaultRoute UserDefined}
+}
+
+node n2 {
+    type router
+    model host
+    network-config {
+	hostname n2Recursive
+	!
+	interface eth0
+	 ip address 192.0.2.100/25
+	 ipv6 address 2001:db8:ca5a:1::2/64
+	!
+    }
+    canvas c1
+    iconcoords {230.0 375.66666666666663}
+    labelcoords {226.0 423.66666666666663}
+    interface-peer {eth0 n3}
+    services {DefaultRoute UserDefined}
+    custom-config {
+	custom-config-id service:UserDefined
+	custom-command UserDefined
+	config {
+	dirs=('/etc/bind', '/var/cache/bind', )
+	files=('/etc/bind/named.conf', '/etc/bind/db.root', )
+	cmdup=('/etc/init.d/bind9 start', )
+	cmddown=('/etc/init.d/bind9 stop', )
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.root
+	custom-command /etc/bind/db.root
+	config {
+	;       This file holds the information on root name servers needed to
+	;       initialize cache of Internet domain name servers
+	;       (e.g. reference this file in the "cache  .  <file>"
+	;       configuration file of BIND domain name servers).
+	;
+	;       This file is made available by InterNIC 
+	;       under anonymous FTP as
+	;           file                /domain/named.cache
+	;           on server           FTP.INTERNIC.NET
+	;       -OR-                    RS.INTERNIC.NET
+	;
+	;       last update:    Jun 17, 2010
+	;       related version of root zone:   2010061700
+	;
+	; formerly NS.INTERNIC.NET
+	;
+	;;.                        3600000  IN  NS    A.ROOT-SERVERS.NET.
+	;;A.ROOT-SERVERS.NET.      3600000      A     198.41.0.4
+	;;A.ROOT-SERVERS.NET.      3600000      AAAA  2001:503:BA3E::2:30
+	;
+	; FORMERLY NS1.ISI.EDU
+	;
+	;;.                        3600000      NS    B.ROOT-SERVERS.NET.
+	;;B.ROOT-SERVERS.NET.      3600000      A     192.228.79.201
+	;
+	; FORMERLY C.PSI.NET
+	;
+	;;.                        3600000      NS    C.ROOT-SERVERS.NET.
+	;;C.ROOT-SERVERS.NET.      3600000      A     192.33.4.12
+	;
+	; FORMERLY TERP.UMD.EDU
+	;
+	;;.                        3600000      NS    D.ROOT-SERVERS.NET.
+	;;D.ROOT-SERVERS.NET.      3600000      A     128.8.10.90
+	;
+	; FORMERLY NS.NASA.GOV
+	;
+	;;.                        3600000      NS    E.ROOT-SERVERS.NET.
+	;;E.ROOT-SERVERS.NET.      3600000      A     192.203.230.10
+	;
+	; FORMERLY NS.ISC.ORG
+	;
+	.                        3600000      NS    F.ROOT-SERVERS.NET.
+	F.ROOT-SERVERS.NET.      3600000      A     192.5.5.241
+	F.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:2F::F
+	;
+	; FORMERLY NS.NIC.DDN.MIL
+	;
+	;;.                        3600000      NS    G.ROOT-SERVERS.NET.
+	;;G.ROOT-SERVERS.NET.      3600000      A     192.112.36.4
+	;
+	; FORMERLY AOS.ARL.ARMY.MIL
+	;
+	;;.                        3600000      NS    H.ROOT-SERVERS.NET.
+	;;H.ROOT-SERVERS.NET.      3600000      A     128.63.2.53
+	;;H.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:1::803F:235
+	;
+	; FORMERLY NIC.NORDU.NET
+	;
+	;;.                        3600000      NS    I.ROOT-SERVERS.NET.
+	;;I.ROOT-SERVERS.NET.      3600000      A     192.36.148.17
+	;;I.ROOT-SERVERS.NET.      3600000      AAAA  2001:7FE::53
+	;
+	; OPERATED BY VERISIGN, INC.
+	;
+	;;.                        3600000      NS    J.ROOT-SERVERS.NET.
+	;;J.ROOT-SERVERS.NET.      3600000      A     192.58.128.30
+	;;J.ROOT-SERVERS.NET.      3600000      AAAA  2001:503:C27::2:30
+	;
+	; OPERATED BY RIPE NCC
+	;
+	;;.                        3600000      NS    K.ROOT-SERVERS.NET.
+	;;K.ROOT-SERVERS.NET.      3600000      A     193.0.14.129
+	;;K.ROOT-SERVERS.NET.      3600000      AAAA  2001:7FD::1
+	;
+	; OPERATED BY ICANN
+	;
+	;;.                        3600000      NS    L.ROOT-SERVERS.NET.
+	;;L.ROOT-SERVERS.NET.      3600000      A     199.7.83.42
+	;;L.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:3::42
+	;
+	; OPERATED BY WIDE
+	;
+	;;.                        3600000      NS    M.ROOT-SERVERS.NET.
+	;;M.ROOT-SERVERS.NET.      3600000      A     202.12.27.33
+	;;M.ROOT-SERVERS.NET.      3600000      AAAA  2001:DC3::35
+	; End of File
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf
+	custom-command /etc/bind/named.conf
+	config {
+	options {
+	  allow-query { any; };
+	  allow-query-cache {
+	    127.0.0.0/8;
+	    192.0.2.0/24;
+	    ::1/128;
+	    2001:db8:ca5a::/48;
+	  };
+	  allow-recursion {
+	    127.0.0.0/8;
+	    192.0.2.0/24;
+	    ::1/128;
+	    2001:db8:ca5a::/48;
+	  };
+	  listen-on-v6 { any; };
+	  disable-empty-zone "2.0.192.in-addr.arpa";
+	  disable-empty-zone "100.51.198.in-addr.arpa";
+	  disable-empty-zone "113.0.203.in-addr.arpa";
+	  disable-empty-zone "8.b.d.0.1.0.0.2.ip6.arpa";
+	};
+	
+	zone "." {
+	  type hint;
+	  file "/etc/bind/db.root";
+	};
+	
+	}
+    }
+}
+
+node n3 {
+    type router
+    model router
+    network-config {
+	hostname n3Router
+	!
+	interface eth1
+	 ipv6 address 2001:db8:ca5a:2::1/64
+	 ip address 192.0.2.129/25
+	!
+	interface eth0
+	 ip address 198.51.100.2/25
+	 ipv6 address 2001:db8:feed::2/64
+	!
+	interface eth2
+	 ip address 192.0.2.1/25
+	 ipv6 address 2001:db8:ca5a:1::1/64
+	!
+    }
+    canvas c1
+    iconcoords {280.6666666666667 295.3333333333333}
+    labelcoords {263.3333333333333 249.66666666666669}
+    interface-peer {eth1 n1}
+    interface-peer {eth2 n2}
+    interface-peer {eth0 n7}
+    custom-config {
+	custom-config-id service:StaticRoute
+	custom-command StaticRoute
+	config {
+	files=('staticroute.sh', )
+	}
+    }
+    custom-config {
+	custom-config-id service:StaticRoute:staticroute.sh
+	custom-command staticroute.sh
+	config {
+	#!/bin/sh
+	/sbin/ip route add 192.5.5.0/24 via 198.51.100.1
+	/sbin/ip route add 199.212.0.0/24 via 198.51.100.1
+	/sbin/ip route add 200.229.248.0/24 via 198.51.100.1
+	/sbin/ip route add 203.0.113.0/24 via 198.51.100.1
+	/sbin/ip route add 2001:500:13::/64 via 2001:db8:feed::1
+	/sbin/ip route add 2001:500:2f::/64 via 2001:db8:feed::1
+	/sbin/ip route add 2001:12f8:1::/64 via 2001:db8:feed::1
+	/sbin/ip route add 2001:db8:beba::/48 via 2001:db8:feed::1
+	
+	}
+    }
+    services {IPForward StaticRoute}
+}
+
+node n4 {
+    type router
+    model host
+    network-config {
+	hostname n4RootServers_F
+	!
+	interface eth0
+	 ip address 192.5.5.241/24
+	 ipv6 address 2001:500:2f::f/64
+	!
+    }
+    canvas c1
+    iconcoords {632.0 197.66666666666669}
+    labelcoords {545.3333333333334 204.33333333333331}
+    interface-peer {eth0 n7}
+    services {DefaultRoute UserDefined}
+    custom-config {
+	custom-config-id service:UserDefined
+	custom-command UserDefined
+	config {
+	dirs=('/etc/bind', '/var/cache/bind', )
+	files=('/etc/bind/named.conf', '/etc/bind/named.conf.options', '/etc/bind/named.conf.local', '/etc/bind/zones.rfc1918', '/etc/bind/db.empty', '/etc/bind/named.conf.default-zones', '/etc/bind/db.local', '/etc/bind/db.127', '/etc/bind/db.0', '/etc/bind/db.255', '/etc/bind/root.zone', '/etc/bind/arpa.zone', )
+	cmdup=('/etc/init.d/bind9 start', )
+	cmddown=('/etc/init.d/bind9 stop', )
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/arpa.zone
+	custom-command /etc/bind/arpa.zone
+	config {
+	arpa.			86400	IN	SOA	f.root-servers.net. nstld.verisign-grs.com. 2013030500 1800 900 604800 86400
+	;;arpa.			518400	IN	NS	a.root-servers.net.
+	;;arpa.			518400	IN	NS	b.root-servers.net.
+	;;arpa.			518400	IN	NS	c.root-servers.net.
+	;;arpa.			518400	IN	NS	d.root-servers.net.
+	;;arpa.			518400	IN	NS	e.root-servers.net.
+	arpa.			518400	IN	NS	f.root-servers.net.
+	;;arpa.			518400	IN	NS	g.root-servers.net.
+	;;arpa.			518400	IN	NS	h.root-servers.net.
+	;;arpa.			518400	IN	NS	i.root-servers.net.
+	;;arpa.			518400	IN	NS	k.root-servers.net.
+	;;arpa.			518400	IN	NS	l.root-servers.net.
+	;;arpa.			518400	IN	NS	m.root-servers.net.
+	;;a.root-servers.net.	3600000	IN	A	198.41.0.4
+	;;b.root-servers.net.	3600000	IN	A	192.228.79.201
+	;;c.root-servers.net.	3600000	IN	A	192.33.4.12
+	;;d.root-servers.net.	3600000	IN	A	199.7.91.13
+	;;e.root-servers.net.	3600000	IN	A	192.203.230.10
+	f.root-servers.net.	3600000	IN	A	192.5.5.241
+	;;g.root-servers.net.	3600000	IN	A	192.112.36.4
+	;;h.root-servers.net.	3600000	IN	A	128.63.2.53
+	;;i.root-servers.net.	3600000	IN	A	192.36.148.17
+	;;k.root-servers.net.	3600000	IN	A	193.0.14.129
+	;;l.root-servers.net.	3600000	IN	A	199.7.83.42
+	;;m.root-servers.net.	3600000	IN	A	202.12.27.33
+	;;a.root-servers.net.	3600000	IN	AAAA	2001:503:ba3e::2:30
+	;;d.root-servers.net.	3600000	IN	AAAA	2001:500:2d::d
+	f.root-servers.net.	3600000	IN	AAAA	2001:500:2f::f
+	;;h.root-servers.net.	3600000	IN	AAAA	2001:500:1::803f:235
+	;;i.root-servers.net.	3600000	IN	AAAA	2001:7fe::53
+	;;k.root-servers.net.	3600000	IN	AAAA	2001:7fd::1
+	;;l.root-servers.net.	3600000	IN	AAAA	2001:500:3::42
+	;;m.root-servers.net.	3600000	IN	AAAA	2001:dc3::35
+	in-addr		172800	IN	NS	a.in-addr-servers.arpa.
+	;;in-addr		172800	IN	NS	b.in-addr-servers.arpa.
+	;;in-addr		172800	IN	NS	c.in-addr-servers.arpa.
+	;;in-addr		172800	IN	NS	d.in-addr-servers.arpa.
+	;;in-addr		172800	IN	NS	e.in-addr-servers.arpa.
+	;;in-addr		172800	IN	NS	f.in-addr-servers.arpa.
+	a.in-addr-servers	172800	IN	A	199.212.0.73
+	;;b.in-addr-servers	172800	IN	A	199.253.183.183
+	;;c.in-addr-servers	172800	IN	A	196.216.169.10
+	;;d.in-addr-servers	172800	IN	A	200.10.60.53
+	;;e.in-addr-servers	172800	IN	A	203.119.86.101
+	;;f.in-addr-servers	172800	IN	A	193.0.9.1
+	a.in-addr-servers	172800	IN	AAAA	2001:500:13::73
+	;;b.in-addr-servers	172800	IN	AAAA	2001:500:87::87
+	;;c.in-addr-servers	172800	IN	AAAA	2001:43f8:110::10
+	;;d.in-addr-servers	172800	IN	AAAA	2001:13c7:7010::53
+	;;e.in-addr-servers	172800	IN	AAAA	2001:dd8:6::101
+	;;f.in-addr-servers	172800	IN	AAAA	2001:67c:e0::1
+	ip6		172800	IN	NS	a.ip6-servers.arpa.
+	;;ip6		172800	IN	NS	b.ip6-servers.arpa.
+	;;ip6		172800	IN	NS	c.ip6-servers.arpa.
+	;;ip6		172800	IN	NS	d.ip6-servers.arpa.
+	;;ip6		172800	IN	NS	e.ip6-servers.arpa.
+	;;ip6		172800	IN	NS	f.ip6-servers.arpa.
+	a.ip6-servers	172800	IN	A	199.212.0.73
+	;;b.ip6-servers	172800	IN	A	199.253.182.182
+	;;c.ip6-servers	172800	IN	A	196.216.169.11
+	;;d.ip6-servers	172800	IN	A	200.7.86.53
+	;;e.ip6-servers	172800	IN	A	202.12.29.59
+	;;f.ip6-servers	172800	IN	A	193.0.9.2
+	a.ip6-servers	172800	IN	AAAA	2001:500:13::73
+	;;b.ip6-servers	172800	IN	AAAA	2001:500:86::86
+	;;c.ip6-servers	172800	IN	AAAA	2001:43f8:110::11
+	;;d.ip6-servers	172800	IN	AAAA	2001:13c7:7012::53
+	;;e.ip6-servers	172800	IN	AAAA	2001:dc0:2001:a:4608::59
+	;;f.ip6-servers	172800	IN	AAAA	2001:67c:e0::2
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/root.zone
+	custom-command /etc/bind/root.zone
+	config {
+	.			86400	IN	SOA	f.root-servers.net. nstld.verisign-grs.com. 2013022801 1800 900 604800 86400
+	;;.			518400	IN	NS	a.root-servers.net.
+	;;.			518400	IN	NS	b.root-servers.net.
+	;;.			518400	IN	NS	c.root-servers.net.
+	;;.			518400	IN	NS	d.root-servers.net.
+	;;.			518400	IN	NS	e.root-servers.net.
+	.			518400	IN	NS	f.root-servers.net.
+	;;.			518400	IN	NS	g.root-servers.net.
+	;;.			518400	IN	NS	h.root-servers.net.
+	;;.			518400	IN	NS	i.root-servers.net.
+	;;.			518400	IN	NS	j.root-servers.net.
+	;;.			518400	IN	NS	k.root-servers.net.
+	;;.			518400	IN	NS	l.root-servers.net.
+	;;.			518400	IN	NS	m.root-servers.net.
+	;;arpa.			172800	IN	NS	a.root-servers.net.
+	;;arpa.			172800	IN	NS	b.root-servers.net.
+	;;arpa.			172800	IN	NS	c.root-servers.net.
+	;;arpa.			172800	IN	NS	d.root-servers.net.
+	;;arpa.			172800	IN	NS	e.root-servers.net.
+	arpa.			172800	IN	NS	f.root-servers.net.
+	;;arpa.			172800	IN	NS	g.root-servers.net.
+	;;arpa.			172800	IN	NS	h.root-servers.net.
+	;;arpa.			172800	IN	NS	i.root-servers.net.
+	;;arpa.			172800	IN	NS	k.root-servers.net.
+	;;arpa.			172800	IN	NS	l.root-servers.net.
+	;;arpa.			172800	IN	NS	m.root-servers.net.
+	;;br.			172800	IN	NS	a.dns.br.
+	;;br.			172800	IN	NS	b.dns.br.
+	;;br.			172800	IN	NS	c.dns.br.
+	;;br.			172800	IN	NS	d.dns.br.
+	br.			172800	IN	NS	e.dns.br.
+	;;br.			172800	IN	NS	f.dns.br.
+	;;a.dns.br.		172800	IN	A	200.160.0.10
+	;;a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	;;b.dns.br.		172800	IN	A	200.189.41.10
+	;;c.dns.br.		172800	IN	A	200.192.233.10
+	;;d.dns.br.		172800	IN	A	200.219.154.10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	;;f.dns.br.		172800	IN	A	200.219.159.10
+	;;ns.dns.br.		172800	IN	A	200.160.0.5
+	;;ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	;;cn.			172800	IN	NS	a.dns.cn.
+	;;cn.			172800	IN	NS	b.dns.cn.
+	;;cn.			172800	IN	NS	c.dns.cn.
+	;;cn.			172800	IN	NS	d.dns.cn.
+	;;cn.			172800	IN	NS	e.dns.cn.
+	;;cn.			172800	IN	NS	ns.cernet.net.
+	;;a.dns.cn.		172800	IN	A	203.119.25.1
+	;;a.dns.cn.		172800	IN	AAAA	2001:dc7:0:0:0:0:0:1
+	;;b.dns.cn.		172800	IN	A	203.119.26.1
+	;;c.dns.cn.		172800	IN	A	203.119.27.1
+	;;d.dns.cn.		172800	IN	A	203.119.28.1
+	;;d.dns.cn.		172800	IN	AAAA	2001:dc7:1000:0:0:0:0:1
+	;;e.dns.cn.		172800	IN	A	203.119.29.1
+	;;h.dns.cn.		172800	IN	A	125.208.32.1
+	;;h.dns.cn.		172800	IN	AAAA	2001:dc7:fffe:0:0:0:0:1
+	;;i.dns.cn.		172800	IN	A	125.208.33.1
+	;;i.dns.cn.		172800	IN	AAAA	2001:dc7:ffff:0:0:0:0:1
+	;;j.dns.cn.		172800	IN	A	125.208.34.1
+	;;k.dns.cn.		172800	IN	A	125.208.35.1
+	;;l.dns.cn.		172800	IN	A	125.208.36.1
+	;;com.			172800	IN	NS	a.gtld-servers.net.
+	;;com.			172800	IN	NS	b.gtld-servers.net.
+	;;com.			172800	IN	NS	c.gtld-servers.net.
+	;;com.			172800	IN	NS	d.gtld-servers.net.
+	;;com.			172800	IN	NS	e.gtld-servers.net.
+	;;com.			172800	IN	NS	f.gtld-servers.net.
+	;;com.			172800	IN	NS	g.gtld-servers.net.
+	;;com.			172800	IN	NS	h.gtld-servers.net.
+	;;com.			172800	IN	NS	i.gtld-servers.net.
+	;;com.			172800	IN	NS	j.gtld-servers.net.
+	;;com.			172800	IN	NS	k.gtld-servers.net.
+	;;com.			172800	IN	NS	l.gtld-servers.net.
+	;;com.			172800	IN	NS	m.gtld-servers.net.
+	;;chc1.adamsnames.com.	172800	IN	A	195.153.6.27
+	;;ns.blacknightsolutions.com.	172800	IN	A	217.114.173.6
+	;;ns.blacknightsolutions.com.	172800	IN	AAAA	2a01:a8:fe00:0:0:0:0:2
+	;;ns2.blacknightsolutions.com.	172800	IN	A	82.96.97.64
+	;;ns2.blacknightsolutions.com.	172800	IN	AAAA	2001:1bc0:ab:3:0:0:0:2
+	;;uucp-gw-1.pa.dec.com.	172800	IN	A	204.123.2.18
+	;;uucp-gw-2.pa.dec.com.	172800	IN	A	204.123.2.19
+	;;austin.gh.com.		172800	IN	A	196.3.64.1
+	;;mantse.gh.com.		172800	IN	A	193.194.185.2
+	;;ns1.iafrica.com.	172800	IN	A	196.7.0.139
+	;;ns3.iafrica.com.	172800	IN	A	196.7.0.137
+	;;hoppy.iom.com.		172800	IN	A	217.23.163.140
+	;;pebbles.iom.com.	172800	IN	A	80.168.83.242
+	;;ns-mg.malagasy.com.	172800	IN	A	87.98.132.231
+	;;ns1.neoip.com.		172800	IN	A	62.90.247.118
+	;;ns2.neoip.com.		172800	IN	A	208.109.17.150
+	;;ns5.nominum.com.	172800	IN	A	74.121.127.35
+	;;a5.nstld.com.		172800	IN	A	192.5.6.34
+	;;a6.nstld.com.		172800	IN	A	192.5.6.35
+	;;c5.nstld.com.		172800	IN	A	192.26.92.34
+	;;c6.nstld.com.		172800	IN	A	192.26.92.35
+	;;d5.nstld.com.		172800	IN	A	192.31.80.34
+	;;d6.nstld.com.		172800	IN	A	192.31.80.35
+	;;f5.nstld.com.		172800	IN	A	192.35.51.34
+	;;f6.nstld.com.		172800	IN	A	192.35.51.35
+	;;g5.nstld.com.		172800	IN	A	192.42.93.34
+	;;g6.nstld.com.		172800	IN	A	192.42.93.35
+	;;h5.nstld.com.		172800	IN	A	192.54.112.34
+	;;h6.nstld.com.		172800	IN	A	192.54.112.35
+	;;j6.nstld.com.		172800	IN	A	192.48.79.35
+	;;k6.nstld.com.		172800	IN	A	192.52.178.35
+	;;l5.nstld.com.		172800	IN	A	192.41.162.34
+	;;l6.nstld.com.		172800	IN	A	192.41.162.35
+	;;m6.nstld.com.		172800	IN	A	192.55.83.35
+	;;ns1.orangecaraibe.com.	172800	IN	A	193.251.160.222
+	;;ns1.pair.com.		172800	IN	A	209.68.1.11
+	;;kynse01.perimeterusa.com.	172800	IN	A	216.54.168.26
+	;;kynse02.perimeterusa.com.	172800	IN	A	216.54.168.27
+	;;kynse03.perimeterusa.com.	172800	IN	A	216.54.168.28
+	;;kynsw01.perimeterusa.com.	172800	IN	A	165.212.160.15
+	;;kynsw02.perimeterusa.com.	172800	IN	A	165.212.160.16
+	;;kynsw03.perimeterusa.com.	172800	IN	A	165.212.160.17
+	;;rain.psg.com.		172800	IN	A	147.28.0.34
+	;;rip.psg.com.		172800	IN	A	147.28.0.39
+	;;rip.psg.com.		172800	IN	AAAA	2001:418:1:0:0:0:0:39
+	;;ns1.net.reach.com.	172800	IN	A	134.159.2.140
+	;;ns2.tojikiston.com.	172800	IN	A	193.111.11.4
+	;;dns1.tld.tutby.com.	172800	IN	A	178.124.133.53
+	;;dns2.tld.tutby.com.	172800	IN	A	93.125.30.44
+	;;dns3.tld.tutby.com.	172800	IN	A	195.137.160.10
+	;;dns3.tld.tutby.com.	172800	IN	AAAA	2a01:d8:2:1:0:0:0:2
+	;;dns4.tld.tutby.com.	172800	IN	A	85.17.148.67
+	;;dns5.tld.tutby.com.	172800	IN	A	82.208.35.204
+	;;de.			172800	IN	NS	a.nic.de.
+	;;de.			172800	IN	NS	f.nic.de.
+	;;de.			172800	IN	NS	l.de.net.
+	;;de.			172800	IN	NS	n.de.net.
+	;;de.			172800	IN	NS	s.de.net.
+	;;de.			172800	IN	NS	z.nic.de.
+	;;dns-ro.denic.de.	172800	IN	A	81.91.161.99
+	;;dns7.denic.de.		172800	IN	A	81.91.161.68
+	;;dns8.denic.de.		172800	IN	A	81.91.161.69
+	;;grdns-de.denic.de.	172800	IN	A	81.91.161.80
+	;;pr-dns.denic.de.	172800	IN	A	81.91.161.82
+	;;ns5.knipp.de.		172800	IN	A	195.253.6.62
+	;;ns5.knipp.de.		172800	IN	AAAA	2a01:5b0:0:29:0:0:0:3e
+	;;a.nic.de.		172800	IN	A	194.0.0.53
+	;;a.nic.de.		172800	IN	AAAA	2001:678:2:0:0:0:0:53
+	;;f.nic.de.		172800	IN	A	81.91.164.5
+	;;f.nic.de.		172800	IN	AAAA	2a02:568:0:2:0:0:0:53
+	;;nsc.nic.de.		172800	IN	A	81.91.161.84
+	;;z.nic.de.		172800	IN	A	194.246.96.1
+	;;il.			172800	IN	NS	nsa.ns.il.
+	;;il.			172800	IN	NS	nsb.ns.il.
+	;;il.			172800	IN	NS	nsd.ns.il.
+	;;il.			172800	IN	NS	nse.ns.il.
+	;;il.			172800	IN	NS	dns8.denic.de.
+	;;il.			172800	IN	NS	ildns.huji.ac.il.
+	;;il.			172800	IN	NS	lookup.iucc.ac.il.
+	;;il.			172800	IN	NS	sns-pb.isc.org.
+	;;ildns.huji.ac.il.	172800	IN	A	128.139.6.66
+	;;lookup.iucc.ac.il.	172800	IN	A	128.139.34.240
+	;;nsa.ns.il.		172800	IN	A	192.115.210.58
+	;;nsb.ns.il.		172800	IN	A	192.115.210.60
+	;;nsd.ns.il.		172800	IN	A	149.20.56.132
+	;;nsd.ns.il.		172800	IN	AAAA	2001:4f8:3:37:0:0:0:11
+	;;nse.ns.il.		172800	IN	A	192.115.141.253
+	;;jp.			172800	IN	NS	a.dns.jp.
+	;;jp.			172800	IN	NS	b.dns.jp.
+	;;jp.			172800	IN	NS	c.dns.jp.
+	;;jp.			172800	IN	NS	d.dns.jp.
+	;;jp.			172800	IN	NS	e.dns.jp.
+	;;jp.			172800	IN	NS	f.dns.jp.
+	;;jp.			172800	IN	NS	g.dns.jp.
+	;;ns20.iij.ad.jp.		172800	IN	A	202.232.2.161
+	;;ns20.iij.ad.jp.		172800	IN	AAAA	2001:240:0:0:0:0:0:161
+	;;a.dns.jp.		172800	IN	A	203.119.1.1
+	;;a.dns.jp.		172800	IN	AAAA	2001:dc4:0:0:0:0:0:1
+	;;b.dns.jp.		172800	IN	A	202.12.30.131
+	;;b.dns.jp.		172800	IN	AAAA	2001:dc2:0:0:0:0:0:1
+	;;c.dns.jp.		172800	IN	A	156.154.100.5
+	;;c.dns.jp.		172800	IN	AAAA	2001:502:ad09:0:0:0:0:5
+	;;d.dns.jp.		172800	IN	A	210.138.175.244
+	;;d.dns.jp.		172800	IN	AAAA	2001:240:0:0:0:0:0:53
+	;;e.dns.jp.		172800	IN	A	192.50.43.53
+	;;e.dns.jp.		172800	IN	AAAA	2001:200:c000:0:0:0:0:35
+	;;f.dns.jp.		172800	IN	A	150.100.6.8
+	;;f.dns.jp.		172800	IN	AAAA	2001:2f8:0:100:0:0:0:153
+	;;g.dns.jp.		172800	IN	A	203.119.40.1
+	;;net.			172800	IN	NS	a.gtld-servers.net.
+	;;net.			172800	IN	NS	b.gtld-servers.net.
+	;;net.			172800	IN	NS	c.gtld-servers.net.
+	;;net.			172800	IN	NS	d.gtld-servers.net.
+	;;net.			172800	IN	NS	e.gtld-servers.net.
+	;;net.			172800	IN	NS	f.gtld-servers.net.
+	;;net.			172800	IN	NS	g.gtld-servers.net.
+	;;net.			172800	IN	NS	h.gtld-servers.net.
+	;;net.			172800	IN	NS	i.gtld-servers.net.
+	;;net.			172800	IN	NS	j.gtld-servers.net.
+	;;net.			172800	IN	NS	k.gtld-servers.net.
+	;;net.			172800	IN	NS	l.gtld-servers.net.
+	;;net.			172800	IN	NS	m.gtld-servers.net.
+	;;ns1.aalnet.net.		172800	IN	A	194.112.0.1
+	;;ns2.aalnet.net.		172800	IN	A	194.112.0.5
+	;;ns3.aalnet.net.		172800	IN	A	82.199.186.130
+	;;ns1.admin.net.		172800	IN	A	198.73.186.1
+	;;ns2.admin.net.		172800	IN	A	67.202.107.93
+	;;ns3.admin.net.		172800	IN	A	87.98.180.44
+	;;ns4.admin.net.		172800	IN	A	202.190.180.244
+	;;ns-ci.afrinic.net.	172800	IN	A	196.216.168.30
+	;;ns-ci.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:30
+	;;ns-dz.afrinic.net.	172800	IN	A	196.216.168.36
+	;;ns-dz.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:36
+	;;ns-ls.afrinic.net.	172800	IN	A	196.216.168.70
+	;;ns-ls.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:70
+	;;ns-ly.afrinic.net.	172800	IN	A	196.216.168.24
+	;;ns-ly.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:24
+	;;ns-ne.afrinic.net.	172800	IN	A	196.216.168.45
+	;;ns-ne.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:45
+	;;ns-rw.afrinic.net.	172800	IN	A	196.216.168.28
+	;;ns-rw.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:28
+	;;ns-td.afrinic.net.	172800	IN	A	196.216.168.31
+	;;ns-td.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:31
+	;;ns-tn.afrinic.net.	172800	IN	A	196.216.168.25
+	;;ns-tn.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:25
+	;;ns-tz.afrinic.net.	172800	IN	A	196.216.168.20
+	;;ns-tz.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:20
+	;;ns-ug.afrinic.net.	172800	IN	A	196.216.168.42
+	;;ns-ug.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:42
+	;;ns-zm.afrinic.net.	172800	IN	A	196.216.168.44
+	;;ns-zm.afrinic.net.	172800	IN	AAAA	2001:43f8:120:0:0:0:0:44
+	;;ns-cdn.amnic.net.	172800	IN	A	194.0.1.26
+	;;ns-cdn.amnic.net.	172800	IN	AAAA	2001:678:4:0:0:0:0:1a
+	;;ns-pri.amnic.net.	172800	IN	A	195.43.74.53
+	;;ns-pri.amnic.net.	172800	IN	AAAA	2001:67c:21c:53:0:0:0:1
+	;;sec1.apnic.net.		172800	IN	A	202.12.29.59
+	;;sec1.apnic.net.		172800	IN	AAAA	2001:dc0:2001:a:4608:0:0:59
+	;;sec3.apnic.net.		172800	IN	A	202.12.28.140
+	;;sec3.apnic.net.		172800	IN	AAAA	2001:dc0:1:0:4777:0:0:140
+	;;sec4.apnic.net.		172800	IN	A	202.12.31.141
+	;;sec4.apnic.net.		172800	IN	AAAA	2001:dc0:4001:1:0:1836:0:141
+	;;ns1.as6453.net.		172800	IN	A	66.198.145.55
+	;;ns2.as6453.net.		172800	IN	A	66.198.145.99
+	;;ns1.asap-asp.net.	172800	IN	A	195.225.3.100
+	;;ns1.bahnhof.net.	172800	IN	A	195.178.160.2
+	;;ns2.bahnhof.net.	172800	IN	A	212.85.64.4
+	;;ns1.barbadosdomain.net.	172800	IN	A	200.50.92.195
+	;;ns2.barbadosdomain.net.	172800	IN	A	204.212.242.113
+	;;nsa.cctldmd.net.	172800	IN	A	217.26.144.5
+	;;ns17.cdns.net.		172800	IN	A	194.0.1.17
+	;;ns17.cdns.net.		172800	IN	AAAA	2001:678:4:0:0:0:0:11
+	;;ns7.cdns.net.		172800	IN	A	194.0.1.7
+	;;ns7.cdns.net.		172800	IN	AAAA	2001:678:4:0:0:0:0:7
+	;;ns.cernet.net.		172800	IN	A	202.112.0.44
+	;;a.ci-servers.net.	172800	IN	A	87.117.194.160
+	;;ns1.cobex.net.		172800	IN	A	216.152.192.71
+	;;ns2.cobex.net.		172800	IN	A	216.152.192.72
+	;;nsa.cx.coccaregistry.net.	172800	IN	A	203.119.84.245
+	;;lk.communitydns.net.	172800	IN	A	194.0.1.27
+	;;ns1.communitydns.net.	172800	IN	A	194.0.1.1
+	;;ns1.communitydns.net.	172800	IN	AAAA	2001:678:4:0:0:0:0:1
+	;;ns15.communitydns.net.	172800	IN	A	194.0.1.15
+	;;ns15.communitydns.net.	172800	IN	AAAA	2001:678:4:0:0:0:0:f
+	;;ph.communitydns.net.	172800	IN	A	194.0.1.23
+	;;ns3.cura.net.		172800	IN	A	200.26.226.6
+	;;euro-ns1.cw.net.	172800	IN	A	141.1.27.248
+	;;euro-ns2.cw.net.	172800	IN	A	212.80.175.2
+	;;euro-ns3.cw.net.	172800	IN	A	141.1.27.251
+	;;l.de.net.		172800	IN	A	77.67.63.105
+	;;l.de.net.		172800	IN	AAAA	2001:668:1f:11:0:0:0:105
+	;;n.de.net.		172800	IN	A	194.146.107.6
+	;;n.de.net.		172800	IN	AAAA	2001:67c:1011:1:0:0:0:53
+	;;s.de.net.		172800	IN	A	195.243.137.26
+	;;dns.dnsafrica.net.	172800	IN	A	213.193.157.30
+	;;cl1.dnsnode.net.	172800	IN	A	194.146.106.34
+	;;cl1.dnsnode.net.	172800	IN	AAAA	2001:67c:1010:8:0:0:0:53
+	;;nl1.dnsnode.net.	172800	IN	A	194.146.106.42
+	;;nl1.dnsnode.net.	172800	IN	AAAA	2001:67c:1010:10:0:0:0:53
+	;;pe1.dnsnode.net.	172800	IN	A	194.146.106.82
+	;;fork.sth.dnsnode.net.	172800	IN	A	77.72.229.254
+	;;fork.sth.dnsnode.net.	172800	IN	AAAA	2a01:3f0:0:306:0:0:0:53
+	;;za1.dnsnode.net.	172800	IN	A	194.146.106.78
+	;;za1.dnsnode.net.	172800	IN	AAAA	2001:67c:1010:19:0:0:0:53
+	;;af1.dyntld.net.		172800	IN	A	208.78.70.94
+	;;af2.dyntld.net.		172800	IN	A	204.13.250.94
+	;;af3.dyntld.net.		172800	IN	A	208.78.71.94
+	;;af4.dyntld.net.		172800	IN	A	204.13.251.94
+	;;coop1.dyntld.net.	172800	IN	A	208.78.70.80
+	;;coop2.dyntld.net.	172800	IN	A	204.13.250.80
+	;;coop3.dyntld.net.	172800	IN	A	208.78.71.80
+	;;coop4.dyntld.net.	172800	IN	A	204.13.251.80
+	;;cx1.dyntld.net.		172800	IN	A	208.78.70.77
+	;;cx2.dyntld.net.		172800	IN	A	204.13.250.77
+	;;cx3.dyntld.net.		172800	IN	A	208.78.71.77
+	;;cx4.dyntld.net.		172800	IN	A	204.13.251.77
+	;;gl1.dyntld.net.		172800	IN	A	208.78.70.97
+	;;gl2.dyntld.net.		172800	IN	A	204.13.250.97
+	;;gl3.dyntld.net.		172800	IN	A	208.78.71.97
+	;;gl4.dyntld.net.		172800	IN	A	204.13.251.97
+	;;gs1.dyntld.net.		172800	IN	A	208.78.70.86
+	;;gs2.dyntld.net.		172800	IN	A	204.13.250.86
+	;;gs3.dyntld.net.		172800	IN	A	208.78.71.86
+	;;gs4.dyntld.net.		172800	IN	A	204.13.251.86
+	;;ki1.dyntld.net.		172800	IN	A	208.78.70.87
+	;;ki2.dyntld.net.		172800	IN	A	204.13.250.87
+	;;ki3.dyntld.net.		172800	IN	A	208.78.71.87
+	;;ki4.dyntld.net.		172800	IN	A	204.13.251.87
+	;;mg1.dyntld.net.		172800	IN	A	208.78.70.96
+	;;mg2.dyntld.net.		172800	IN	A	204.13.250.96
+	;;mg3.dyntld.net.		172800	IN	A	208.78.71.96
+	;;mg4.dyntld.net.		172800	IN	A	204.13.251.96
+	;;ms1.dyntld.net.		172800	IN	A	208.78.70.84
+	;;ms2.dyntld.net.		172800	IN	A	204.13.250.84
+	;;ms3.dyntld.net.		172800	IN	A	208.78.71.84
+	;;ms4.dyntld.net.		172800	IN	A	204.13.251.84
+	;;mu1.dyntld.net.		172800	IN	A	208.78.70.79
+	;;mu2.dyntld.net.		172800	IN	A	204.13.250.79
+	;;mu3.dyntld.net.		172800	IN	A	208.78.71.79
+	;;mu4.dyntld.net.		172800	IN	A	204.13.251.79
+	;;na1.dyntld.net.		172800	IN	A	208.78.70.90
+	;;na2.dyntld.net.		172800	IN	A	204.13.250.90
+	;;nf1.dyntld.net.		172800	IN	A	208.78.70.88
+	;;nf2.dyntld.net.		172800	IN	A	204.13.250.88
+	;;nf3.dyntld.net.		172800	IN	A	208.78.71.88
+	;;nf4.dyntld.net.		172800	IN	A	204.13.251.88
+	;;sb1.dyntld.net.		172800	IN	A	208.78.70.83
+	;;sb2.dyntld.net.		172800	IN	A	204.13.250.83
+	;;sb3.dyntld.net.		172800	IN	A	208.78.71.83
+	;;sb4.dyntld.net.		172800	IN	A	204.13.251.83
+	;;tl1.dyntld.net.		172800	IN	A	208.78.70.78
+	;;tl2.dyntld.net.		172800	IN	A	204.13.250.78
+	;;tl3.dyntld.net.		172800	IN	A	208.78.71.78
+	;;tl4.dyntld.net.		172800	IN	A	204.13.251.78
+	;;a.edu-servers.net.	172800	IN	A	192.5.6.30
+	;;c.edu-servers.net.	172800	IN	A	192.26.92.30
+	;;d.edu-servers.net.	172800	IN	A	192.31.80.30
+	;;f.edu-servers.net.	172800	IN	A	192.35.51.30
+	;;g.edu-servers.net.	172800	IN	A	192.42.93.30
+	;;g.edu-servers.net.	172800	IN	AAAA	2001:503:cc2c:0:0:0:2:36
+	;;l.edu-servers.net.	172800	IN	A	192.41.162.30
+	;;ns3.ns.esat.net.	172800	IN	A	192.111.39.100
+	;;ns3.ns.esat.net.	172800	IN	AAAA	2001:7c8:2:a:0:0:0:64
+	;;dca.tld.gdns.net.	172800	IN	A	198.65.143.254
+	;;news-tokyo.gip.net.	172800	IN	A	204.59.64.222
+	;;ns2.gip.net.		172800	IN	A	204.59.1.222
+	;;a.gov-servers.net.	172800	IN	A	69.36.157.30
+	;;a.gov-servers.net.	172800	IN	AAAA	2001:500:4431:0:0:0:2:30
+	;;b.gov-servers.net.	172800	IN	A	209.112.123.30
+	;;a.gtld-servers.net.	172800	IN	A	192.5.6.30
+	;;a.gtld-servers.net.	172800	IN	AAAA	2001:503:a83e:0:0:0:2:30
+	;;b.gtld-servers.net.	172800	IN	A	192.33.14.30
+	;;b.gtld-servers.net.	172800	IN	AAAA	2001:503:231d:0:0:0:2:30
+	;;c.gtld-servers.net.	172800	IN	A	192.26.92.30
+	;;d.gtld-servers.net.	172800	IN	A	192.31.80.30
+	;;e.gtld-servers.net.	172800	IN	A	192.12.94.30
+	;;f.gtld-servers.net.	172800	IN	A	192.35.51.30
+	;;g.gtld-servers.net.	172800	IN	A	192.42.93.30
+	;;h.gtld-servers.net.	172800	IN	A	192.54.112.30
+	;;i.gtld-servers.net.	172800	IN	A	192.43.172.30
+	;;j.gtld-servers.net.	172800	IN	A	192.48.79.30
+	;;k.gtld-servers.net.	172800	IN	A	192.52.178.30
+	;;l.gtld-servers.net.	172800	IN	A	192.41.162.30
+	;;m.gtld-servers.net.	172800	IN	A	192.55.83.30
+	;;osi2.gua.net.		172800	IN	A	205.161.188.3
+	;;a.iana-servers.net.	172800	IN	A	199.43.132.53
+	;;a.iana-servers.net.	172800	IN	AAAA	2001:500:8c:0:0:0:0:53
+	;;b.iana-servers.net.	172800	IN	A	199.43.133.53
+	;;b.iana-servers.net.	172800	IN	AAAA	2001:500:8d:0:0:0:0:53
+	;;c.iana-servers.net.	172800	IN	A	199.43.134.53
+	;;c.iana-servers.net.	172800	IN	AAAA	2001:500:8e:0:0:0:0:53
+	;;test-ns.iana-servers.net.	172800	IN	AAAA	2001:4900:1:393:0:0:0:45
+	;;anyc1.irondns.net.	172800	IN	A	195.253.64.4
+	;;anyc1.irondns.net.	172800	IN	AAAA	2a01:5b0:4:0:0:0:0:4
+	;;anyc2.irondns.net.	172800	IN	A	195.253.64.7
+	;;anyc2.irondns.net.	172800	IN	AAAA	2a01:5b0:4:0:0:0:0:7
+	;;tld.isc-sns.net.	172800	IN	A	63.243.194.3
+	;;tld.isc-sns.net.	172800	IN	AAAA	2001:5a0:10:0:0:0:0:3
+	;;ns0.ja.net.		172800	IN	A	128.86.1.20
+	;;ns0.ja.net.		172800	IN	A	193.63.94.20
+	;;ns0.ja.net.		172800	IN	AAAA	2001:630:0:8:0:0:0:14
+	;;ns0.ja.net.		172800	IN	AAAA	2001:630:0:9:0:0:0:14
+	;;ns4.ja.net.		172800	IN	A	193.62.157.66
+	;;ns4.ja.net.		172800	IN	AAAA	2001:630:0:47:0:0:0:42
+	;;kwns.kems.net.		172800	IN	A	168.187.5.12
+	;;ns1.krnic.net.		172800	IN	A	202.30.50.51
+	;;dns.lttnet.net.		172800	IN	A	62.240.36.9
+	;;dns1.lttnet.net.	172800	IN	A	62.68.42.9
+	;;ns1-fr.mediaserv.net.	172800	IN	A	188.165.38.14
+	;;ns1-gp.mediaserv.net.	172800	IN	A	213.188.172.1
+	;;ns1-mq.mediaserv.net.	172800	IN	A	213.16.20.3
+	;;server.nordu.net.	172800	IN	A	193.10.252.19
+	;;a.ns13.net.		172800	IN	A	49.212.31.192
+	;;b.ns13.net.		172800	IN	A	49.212.51.85
+	;;cl-ns.anycast.pch.net.	172800	IN	A	204.61.216.30
+	;;cl-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6030:ad:0:0:1
+	;;cy-ns.anycast.pch.net.	172800	IN	A	204.61.216.44
+	;;cy-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6044:ad:0:0:1
+	;;gy-ns.anycast.pch.net.	172800	IN	A	204.61.216.34
+	;;gy-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6034:ad:0:0:1
+	;;ht-ns.anycast.pch.net.	172800	IN	A	204.61.216.38
+	;;ls-ns.anycast.pch.net.	172800	IN	A	204.61.216.28
+	;;ls-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6028:ad:0:0:1
+	;;ms-ns.anycast.pch.net.	172800	IN	A	204.61.216.33
+	;;mv-ns.anycast.pch.net.	172800	IN	A	204.61.216.24
+	;;na-ns.anycast.pch.net.	172800	IN	A	204.61.216.35
+	;;na-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6035:ad:0:0:1
+	;;np-ns.anycast.pch.net.	172800	IN	A	204.61.216.11
+	;;np-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6011:ad:0:0:1
+	;;pr-ns.anycast.pch.net.	172800	IN	A	204.61.216.23
+	;;pr-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6023:ad:0:0:1
+	;;ps-ns.anycast.pch.net.	172800	IN	A	204.61.216.29
+	;;ps-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6029:ad:0:0:1
+	;;sa-ns.anycast.pch.net.	172800	IN	A	204.61.216.41
+	;;sa-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6041:ad:0:0:1
+	;;sb-ns.anycast.pch.net.	172800	IN	A	204.61.216.31
+	;;sb-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6031:ad:0:0:1
+	;;sg-ns.anycast.pch.net.	172800	IN	A	204.61.216.57
+	;;sg-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6057:ad:0:0:1
+	;;za-ns.anycast.pch.net.	172800	IN	A	204.61.216.55
+	;;za-ns.anycast.pch.net.	172800	IN	AAAA	2001:500:14:6055:ad:0:0:1
+	;;anyns.pch.net.		172800	IN	A	204.61.216.4
+	;;cat.pch.net.		172800	IN	A	204.61.216.20
+	;;cat.pch.net.		172800	IN	AAAA	2001:500:14:6020:ad:0:0:1
+	;;nic.lk-anycast.pch.net.	172800	IN	A	204.61.216.27
+	;;nf-ns.pch.net.		172800	IN	A	204.61.216.51
+	;;nf-ns.pch.net.		172800	IN	AAAA	2001:500:14:6051:ad:0:0:1
+	;;al.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.56
+	;;al.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:56
+	;;am.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.57
+	;;am.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:57
+	;;ar.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.59
+	;;ar.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:59
+	;;bg.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.61
+	;;bg.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:61
+	;;cu.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.70
+	;;cu.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:70
+	;;is.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.81
+	;;is.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:81
+	;;jm.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.82
+	;;jm.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:82
+	;;kg.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.84
+	;;kg.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:84
+	;;kz.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.87
+	;;kz.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:87
+	;;lv.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.89
+	;;lv.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:89
+	;;ly.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.90
+	;;ly.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:90
+	;;ps.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.105
+	;;ps.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:105
+	;;py.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.106
+	;;py.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:106
+	;;sa.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.108
+	;;sa.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:108
+	;;sv.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.112
+	;;sv.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:112
+	;;tc.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.115
+	;;tc.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:115
+	;;tj.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.117
+	;;tj.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:117
+	;;to.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.118
+	;;to.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:118
+	;;ug.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.52
+	;;ug.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:52
+	;;vn.cctld.authdns.ripe.net.	172800	IN	A	193.0.9.126
+	;;vn.cctld.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:126
+	;;sec2.authdns.ripe.net.	172800	IN	A	193.0.9.4
+	;;sec2.authdns.ripe.net.	172800	IN	AAAA	2001:67c:e0:0:0:0:0:4
+	;;a.dns.ripn.net.		172800	IN	A	193.232.128.6
+	;;a.dns.ripn.net.		172800	IN	AAAA	2001:678:17:0:193:232:128:6
+	;;b.dns.ripn.net.		172800	IN	A	194.85.252.62
+	;;b.dns.ripn.net.		172800	IN	AAAA	2001:678:16:0:194:85:252:62
+	;;d.dns.ripn.net.		172800	IN	A	194.190.124.17
+	;;d.dns.ripn.net.		172800	IN	AAAA	2001:678:18:0:194:190:124:17
+	;;e.dns.ripn.net.		172800	IN	A	193.232.142.17
+	;;e.dns.ripn.net.		172800	IN	AAAA	2001:678:15:0:193:232:142:17
+	;;f.dns.ripn.net.		172800	IN	A	193.232.156.17
+	;;f.dns.ripn.net.		172800	IN	AAAA	2001:678:14:0:193:232:156:17
+	;;a.root-servers.net.	518400	IN	A	198.41.0.4
+	;;a.root-servers.net.	518400	IN	AAAA	2001:503:ba3e:0:0:0:2:30
+	;;b.root-servers.net.	518400	IN	A	192.228.79.201
+	;;c.root-servers.net.	518400	IN	A	192.33.4.12
+	;;d.root-servers.net.	518400	IN	A	128.8.10.90
+	;;d.root-servers.net.	518400	IN	AAAA	2001:500:2d:0:0:0:0:d
+	;;e.root-servers.net.	518400	IN	A	192.203.230.10
+	f.root-servers.net.	518400	IN	A	192.5.5.241
+	f.root-servers.net.	518400	IN	AAAA	2001:500:2f:0:0:0:0:f
+	;;g.root-servers.net.	518400	IN	A	192.112.36.4
+	;;h.root-servers.net.	518400	IN	A	128.63.2.53
+	;;h.root-servers.net.	518400	IN	AAAA	2001:500:1:0:0:0:803f:235
+	;;i.root-servers.net.	518400	IN	A	192.36.148.17
+	;;i.root-servers.net.	518400	IN	AAAA	2001:7fe:0:0:0:0:0:53
+	;;j.root-servers.net.	518400	IN	A	192.58.128.30
+	;;j.root-servers.net.	518400	IN	AAAA	2001:503:c27:0:0:0:2:30
+	;;k.root-servers.net.	518400	IN	A	193.0.14.129
+	;;k.root-servers.net.	518400	IN	AAAA	2001:7fd:0:0:0:0:0:1
+	;;l.root-servers.net.	518400	IN	A	199.7.83.42
+	;;l.root-servers.net.	518400	IN	AAAA	2001:500:3:0:0:0:0:42
+	;;m.root-servers.net.	518400	IN	A	202.12.27.33
+	;;m.root-servers.net.	518400	IN	AAAA	2001:dc3:0:0:0:0:0:35
+	;;igubu.saix.net.		172800	IN	A	196.25.1.1
+	;;sabela.saix.net.	172800	IN	A	196.43.1.9
+	;;ns02.savvis.net.	172800	IN	A	204.70.57.242
+	;;ns1.sr.net.		172800	IN	A	200.1.159.148
+	;;ns2.sr.net.		172800	IN	A	200.2.162.30
+	;;ns.thnic.net.		172800	IN	A	202.28.0.1
+	;;ns.twnic.net.		172800	IN	A	192.83.166.11
+	;;ns.twnic.net.		172800	IN	AAAA	2001:288:1:1006:0:0:0:11
+	;;ins2.tosa.twtelecom.net.	172800	IN	A	204.95.160.4
+	;;ns1.tosa.twtelecom.net.	172800	IN	A	204.95.160.2
+	;;tld1.ultradns.net.	172800	IN	A	204.74.112.1
+	;;tld1.ultradns.net.	172800	IN	AAAA	2001:502:d399:0:0:0:0:1
+	;;tld2.ultradns.net.	172800	IN	A	204.74.113.1
+	;;ns.uu.net.		172800	IN	A	137.39.1.3
+	;;auth00.ns.uu.net.	172800	IN	A	198.6.1.65
+	;;auth00.ns.uu.net.	172800	IN	AAAA	2600:803:408:2:0:0:0:10
+	;;auth02.ns.uu.net.	172800	IN	A	198.6.1.82
+	;;auth03.ns.uu.net.	172800	IN	A	198.6.1.83
+	;;auth100.ns.uu.net.	172800	IN	A	198.6.1.202
+	;;auth101.ns.uu.net.	172800	IN	A	198.6.1.210
+	;;auth110.ns.uu.net.	172800	IN	A	198.6.1.114
+	;;auth200.ns.uu.net.	172800	IN	A	195.129.12.82
+	;;auth210.ns.uu.net.	172800	IN	A	195.129.12.74
+	;;auth51.ns.uu.net.	172800	IN	A	198.6.1.162
+	;;auth61.ns.uu.net.	172800	IN	A	198.6.1.182
+	;;no.			172800	IN	NS	i.nic.no.
+	;;no.			172800	IN	NS	x.nic.no.
+	;;no.			172800	IN	NS	y.nic.no.
+	;;no.			172800	IN	NS	z.nic.no.
+	;;no.			172800	IN	NS	not.norid.no.
+	;;no.			172800	IN	NS	njet.norid.no.
+	;;nac.no.			172800	IN	A	128.39.2.22
+	;;i.nic.no.		172800	IN	A	194.146.106.6
+	;;x.nic.no.		172800	IN	A	128.39.8.40
+	;;y.nic.no.		172800	IN	A	193.75.4.22
+	;;y.nic.no.		172800	IN	AAAA	2001:8c0:8200:1:0:0:0:2
+	;;z.nic.no.		172800	IN	A	158.38.8.133
+	;;z.nic.no.		172800	IN	AAAA	2001:700:0:52d:158:38:8:133
+	;;njet.norid.no.		172800	IN	A	156.154.101.12
+	;;not.norid.no.		172800	IN	A	156.154.100.12
+	;;not.norid.no.		172800	IN	AAAA	2001:502:ad09:0:0:0:0:12
+	;;nn.uninett.no.		172800	IN	A	158.38.0.181
+	;;org.			172800	IN	NS	a0.org.afilias-nst.info.
+	;;org.			172800	IN	NS	a2.org.afilias-nst.info.
+	;;org.			172800	IN	NS	b0.org.afilias-nst.org.
+	;;org.			172800	IN	NS	b2.org.afilias-nst.org.
+	;;org.			172800	IN	NS	c0.org.afilias-nst.info.
+	;;org.			172800	IN	NS	d0.org.afilias-nst.org.
+	;;b0.cctld.afilias-nst.org.	172800	IN	A	199.254.60.1
+	;;b0.cctld.afilias-nst.org.	172800	IN	AAAA	2001:500:26:0:0:0:0:1
+	;;b2.cctld.afilias-nst.org.	172800	IN	A	199.249.124.1
+	;;b2.cctld.afilias-nst.org.	172800	IN	AAAA	2001:500:4c:0:0:0:0:1
+	;;d0.cctld.afilias-nst.org.	172800	IN	A	199.254.62.1
+	;;d0.cctld.afilias-nst.org.	172800	IN	AAAA	2001:500:28:0:0:0:0:1
+	;;b0.in.afilias-nst.org.	172800	IN	A	199.253.56.1
+	;;b0.in.afilias-nst.org.	172800	IN	AAAA	2001:500:50:0:0:0:0:1
+	;;b2.in.afilias-nst.org.	172800	IN	A	199.249.125.1
+	;;b2.in.afilias-nst.org.	172800	IN	AAAA	2001:500:4d:0:0:0:0:1
+	;;d0.in.afilias-nst.org.	172800	IN	A	199.253.58.1
+	;;d0.in.afilias-nst.org.	172800	IN	AAAA	2001:500:52:0:0:0:0:1
+	;;b0.info.afilias-nst.org.	172800	IN	A	199.254.48.1
+	;;b0.info.afilias-nst.org.	172800	IN	AAAA	2001:500:1a:0:0:0:0:1
+	;;b2.info.afilias-nst.org.	172800	IN	A	199.249.121.1
+	;;b2.info.afilias-nst.org.	172800	IN	AAAA	2001:500:49:0:0:0:0:1
+	;;d0.info.afilias-nst.org.	172800	IN	A	199.254.50.1
+	;;d0.info.afilias-nst.org.	172800	IN	AAAA	2001:500:1c:0:0:0:0:1
+	;;b2.me.afilias-nst.org.	172800	IN	A	199.249.127.1
+	;;b2.me.afilias-nst.org.	172800	IN	AAAA	2001:500:4f:0:0:0:0:1
+	;;b0.mobi.afilias-nst.org.	172800	IN	A	199.254.56.1
+	;;b0.mobi.afilias-nst.org.	172800	IN	AAAA	2001:500:22:0:0:0:0:1
+	;;b2.mobi.afilias-nst.org.	172800	IN	A	199.249.126.1
+	;;b2.mobi.afilias-nst.org.	172800	IN	AAAA	2001:500:4e:0:0:0:0:1
+	;;d0.mobi.afilias-nst.org.	172800	IN	A	199.254.58.1
+	;;d0.mobi.afilias-nst.org.	172800	IN	AAAA	2001:500:24:0:0:0:0:1
+	;;b0.org.afilias-nst.org.	172800	IN	A	199.19.54.1
+	;;b0.org.afilias-nst.org.	172800	IN	AAAA	2001:500:c:0:0:0:0:1
+	;;b2.org.afilias-nst.org.	172800	IN	A	199.249.120.1
+	;;b2.org.afilias-nst.org.	172800	IN	AAAA	2001:500:48:0:0:0:0:1
+	;;d0.org.afilias-nst.org.	172800	IN	A	199.19.57.1
+	;;d0.org.afilias-nst.org.	172800	IN	AAAA	2001:500:f:0:0:0:0:1
+	;;b0.post.afilias-nst.org.	172800	IN	A	65.22.1.1
+	;;b0.post.afilias-nst.org.	172800	IN	AAAA	2a01:8840:1:0:0:0:0:1
+	;;b2.post.afilias-nst.org.	172800	IN	A	65.22.5.1
+	;;b2.post.afilias-nst.org.	172800	IN	AAAA	2a01:8840:5:0:0:0:0:1
+	;;d0.post.afilias-nst.org.	172800	IN	A	65.22.3.1
+	;;d0.post.afilias-nst.org.	172800	IN	AAAA	2a01:8840:3:0:0:0:0:1
+	;;b0.pro.afilias-nst.org.	172800	IN	A	199.182.1.1
+	;;b0.pro.afilias-nst.org.	172800	IN	AAAA	2001:500:c1:0:0:0:0:1
+	;;b2.pro.afilias-nst.org.	172800	IN	A	199.182.40.1
+	;;b2.pro.afilias-nst.org.	172800	IN	AAAA	2001:500:e1:0:0:0:0:1
+	;;d0.pro.afilias-nst.org.	172800	IN	A	199.182.17.1
+	;;d0.pro.afilias-nst.org.	172800	IN	AAAA	2001:500:d1:0:0:0:0:1
+	;;b0.xxx.afilias-nst.org.	172800	IN	A	199.115.153.1
+	;;b0.xxx.afilias-nst.org.	172800	IN	AAAA	2001:500:a1:0:0:0:0:1
+	;;b2.xxx.afilias-nst.org.	172800	IN	A	199.115.157.1
+	;;b2.xxx.afilias-nst.org.	172800	IN	AAAA	2001:500:a5:0:0:0:0:1
+	;;d0.xxx.afilias-nst.org.	172800	IN	A	199.115.155.1
+	;;d0.xxx.afilias-nst.org.	172800	IN	AAAA	2001:500:a3:0:0:0:0:1
+	;;b.ci-servers.org.	172800	IN	A	82.103.139.220
+	;;c.ci-servers.org.	172800	IN	A	194.146.106.86
+	;;c.ci-servers.org.	172800	IN	AAAA	2001:67c:1010:22:0:0:0:53
+	;;ns.icann.org.		172800	IN	A	199.4.138.53
+	;;ns.icann.org.		172800	IN	AAAA	2001:500:89:0:0:0:0:53
+	;;ns-ext.isc.org.		172800	IN	A	204.152.184.64
+	;;ns-ext.isc.org.		172800	IN	AAAA	2001:4f8:0:2:0:0:0:13
+	;;sns-pb.isc.org.		172800	IN	A	192.5.4.1
+	;;sns-pb.isc.org.		172800	IN	AAAA	2001:500:2e:0:0:0:0:1
+	;;ams.sns-pb.isc.org.	172800	IN	A	199.6.1.30
+	;;ams.sns-pb.isc.org.	172800	IN	AAAA	2001:500:60:0:0:0:0:30
+	;;sfba.sns-pb.isc.org.	172800	IN	A	149.20.64.3
+	;;sfba.sns-pb.isc.org.	172800	IN	AAAA	2001:4f8:0:2:0:0:0:19
+	;;tld3.ultradns.org.	172800	IN	A	199.7.66.1
+	;;tld4.ultradns.org.	172800	IN	A	199.7.67.1
+	;;tld4.ultradns.org.	172800	IN	AAAA	2001:502:100e:0:0:0:0:1
+	;;pl.			172800	IN	NS	a-dns.pl.
+	;;pl.			172800	IN	NS	c-dns.pl.
+	;;pl.			172800	IN	NS	d-dns.pl.
+	;;pl.			172800	IN	NS	e-dns.pl.
+	;;pl.			172800	IN	NS	f-dns.pl.
+	;;pl.			172800	IN	NS	g-dns.pl.
+	;;pl.			172800	IN	NS	h-dns.pl.
+	;;pl.			172800	IN	NS	i-dns.pl.
+	;;a-dns.pl.		172800	IN	A	195.187.245.44
+	;;c-dns.pl.		172800	IN	A	195.47.235.226
+	;;d-dns.pl.		172800	IN	A	213.172.174.70
+	;;e-dns.pl.		172800	IN	A	195.80.237.162
+	;;f-dns.pl.		172800	IN	A	217.17.46.189
+	;;f-dns.pl.		172800	IN	AAAA	2001:1a68:0:10:0:0:0:189
+	;;g-dns.pl.		172800	IN	A	149.156.1.6
+	;;g-dns.pl.		172800	IN	AAAA	2001:6d8:0:1:0:0:a:6
+	;;h-dns.pl.		172800	IN	A	194.0.1.2
+	;;h-dns.pl.		172800	IN	AAAA	2001:678:4:0:0:0:0:2
+	;;i-dns.pl.		172800	IN	A	156.154.100.15
+	;;ru.			172800	IN	NS	a.dns.ripn.net.
+	;;ru.			172800	IN	NS	b.dns.ripn.net.
+	;;ru.			172800	IN	NS	d.dns.ripn.net.
+	;;ru.			172800	IN	NS	e.dns.ripn.net.
+	;;ru.			172800	IN	NS	f.dns.ripn.net.
+	;;uk.			172800	IN	NS	ns1.nic.uk.
+	;;uk.			172800	IN	NS	ns2.nic.uk.
+	;;uk.			172800	IN	NS	ns3.nic.uk.
+	;;uk.			172800	IN	NS	ns4.nic.uk.
+	;;uk.			172800	IN	NS	ns5.nic.uk.
+	;;uk.			172800	IN	NS	ns6.nic.uk.
+	;;uk.			172800	IN	NS	ns7.nic.uk.
+	;;uk.			172800	IN	NS	nsa.nic.uk.
+	;;uk.			172800	IN	NS	nsb.nic.uk.
+	;;uk.			172800	IN	NS	nsc.nic.uk.
+	;;uk.			172800	IN	NS	nsd.nic.uk.
+	;;ns1.cs.ucl.ac.uk.	172800	IN	A	128.16.5.32
+	;;barney.advsys.co.uk.	172800	IN	A	217.23.160.50
+	;;ns3.icb.co.uk.		172800	IN	A	91.208.95.130
+	;;tld6.ultradns.co.uk.	172800	IN	A	198.133.199.11
+	;;ns1.nic.uk.		172800	IN	A	195.66.240.130
+	;;ns1.nic.uk.		172800	IN	AAAA	2a01:40:1001:35:0:0:0:2
+	;;ns2.nic.uk.		172800	IN	A	217.79.164.131
+	;;ns3.nic.uk.		172800	IN	A	213.219.13.131
+	;;ns4.nic.uk.		172800	IN	A	194.83.244.131
+	;;ns4.nic.uk.		172800	IN	AAAA	2001:630:181:35:0:0:0:83
+	;;ns5.nic.uk.		172800	IN	A	213.246.167.131
+	;;ns6.nic.uk.		172800	IN	A	213.248.254.130
+	;;ns7.nic.uk.		172800	IN	A	212.121.40.130
+	;;nsa.nic.uk.		172800	IN	A	156.154.100.3
+	;;nsa.nic.uk.		172800	IN	AAAA	2001:502:ad09:0:0:0:0:3
+	;;nsb.nic.uk.		172800	IN	A	156.154.101.3
+	;;nsc.nic.uk.		172800	IN	A	156.154.102.3
+	;;nsd.nic.uk.		172800	IN	A	156.154.103.3
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.255
+	custom-command /etc/bind/db.255
+	config {
+	;
+	; BIND reverse data file for broadcast zone
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.0
+	custom-command /etc/bind/db.0
+	config {
+	;
+	; BIND reverse data file for broadcast zone
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.127
+	custom-command /etc/bind/db.127
+	config {
+	;
+	; BIND reverse data file for local loopback interface
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	1.0.0	IN	PTR	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.local
+	custom-command /etc/bind/db.local
+	config {
+	;
+	; BIND data file for local loopback interface
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      2		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	@	IN	A	127.0.0.1
+	@	IN	AAAA	::1
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf.default-zones
+	custom-command /etc/bind/named.conf.default-zones
+	config {
+	// prime the server with knowledge of the root servers
+	zone "." {
+		type master;
+		file "/etc/bind/root.zone";
+	};
+	
+	// be authoritative for the localhost forward and reverse zones, and for
+	// broadcast zones as per RFC 1912
+	
+	zone "localhost" {
+		type master;
+		file "/etc/bind/db.local";
+	};
+	
+	zone "127.in-addr.arpa" {
+		type master;
+		file "/etc/bind/db.127";
+	};
+	
+	zone "0.in-addr.arpa" {
+		type master;
+		file "/etc/bind/db.0";
+	};
+	
+	zone "255.in-addr.arpa" {
+		type master;
+		file "/etc/bind/db.255";
+	};
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.empty
+	custom-command /etc/bind/db.empty
+	config {
+	; BIND reverse data file for empty rfc1918 zone
+	;
+	; DO NOT EDIT THIS FILE - it is used for multiple zones.
+	; Instead, copy it, edit named.conf, and use that copy.
+	;
+	$TTL	86400
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				  86400 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/zones.rfc1918
+	custom-command /etc/bind/zones.rfc1918
+	config {
+	zone "10.in-addr.arpa"      { type master; file "/etc/bind/db.empty"; };
+	 
+	zone "16.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "17.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "18.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "19.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "20.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "21.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "22.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "23.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "24.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "25.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "26.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "27.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "28.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "29.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "30.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "31.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	
+	zone "168.192.in-addr.arpa" { type master; file "/etc/bind/db.empty"; };
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf.local
+	custom-command /etc/bind/named.conf.local
+	config {
+	//
+	// Do any local configuration here
+	//
+	
+	// Consider adding the 1918 zones here, if they are not used in your
+	// organization
+	//include "/etc/bind/zones.rfc1918";
+	
+	include "/etc/bind/zones.rfc1918";
+	
+	zone "arpa"         { type master; file "/etc/bind/arpa.zone"; };
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf.options
+	custom-command /etc/bind/named.conf.options
+	config {
+	options {
+		directory "/var/cache/bind";
+	
+		// If there is a firewall between you and nameservers you want
+		// to talk to, you may need to fix the firewall to allow multiple
+		// ports to talk.  See http://www.kb.cert.org/vuls/id/800113
+	
+		// If your ISP provided one or more IP addresses for stable 
+		// nameservers, you probably want to use them as forwarders.  
+		// Uncomment the following block, and insert the addresses replacing 
+		// the all-0's placeholder.
+	
+		// forwarders {
+		// 	0.0.0.0;
+		// };
+	
+		//========================================================================
+		// If BIND logs error messages about the root key being expired,
+		// you will need to update your keys.  See https://www.isc.org/bind-keys
+		//========================================================================
+		dnssec-validation no;
+	
+		auth-nxdomain no;    # conform to RFC1035
+		allow-query { any; };
+		listen-on { any; };
+		listen-on-v6 { any; };
+		recursion no;
+		root-delegation-only;
+	};
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf
+	custom-command /etc/bind/named.conf
+	config {
+	// This is the primary configuration file for the BIND DNS server named.
+	//
+	// Please read /usr/share/doc/bind9/README.Debian.gz for information on the 
+	// structure of BIND configuration files in Debian, *BEFORE* you customize 
+	// this configuration file.
+	//
+	// If you are just adding zones, please do that in /etc/bind/named.conf.local
+	
+	include "/etc/bind/named.conf.options";
+	include "/etc/bind/named.conf.local";
+	include "/etc/bind/named.conf.default-zones";
+	
+	}
+    }
+}
+
+node n5 {
+    type router
+    model host
+    network-config {
+	hostname n5ARPAServers_A
+	!
+	interface eth0
+	 ip address 199.212.0.73/24
+	 ipv6 address 2001:500:13::73/64
+	!
+    }
+    canvas c1
+    iconcoords {391.66666666666663 366.33333333333337}
+    labelcoords {386.66666666666663 412.0}
+    interface-peer {eth0 n7}
+    services {DefaultRoute UserDefined}
+    custom-config {
+	custom-config-id service:UserDefined
+	custom-command UserDefined
+	config {
+	dirs=('/etc/bind', '/var/cache/bind', )
+	files=('/etc/bind/named.conf', '/etc/bind/named.conf.options', '/etc/bind/named.conf.local', '/etc/bind/zones.rfc1918', '/etc/bind/db.empty', '/etc/bind/named.conf.default-zones', '/etc/bind/db.root', '/etc/bind/db.local', '/etc/bind/db.127', '/etc/bind/db.0', '/etc/bind/db.255', '/etc/bind/in-addr.arpa.zone', '/etc/bind/ip6.arpa.zone', )
+	cmdup=('/etc/init.d/bind9 start', )
+	cmddown=('/etc/init.d/bind9 stop', )
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/ip6.arpa.zone
+	custom-command /etc/bind/ip6.arpa.zone
+	config {
+	ip6.arpa.		3600	IN	SOA	a.ip6-servers.arpa. hostmaster.icann.org. 2011027282 1800 900 604800 3600
+	ip6.arpa.		84600	IN	NS	a.ip6-servers.arpa.
+	;;ip6.arpa.		84600	IN	NS	b.ip6-servers.arpa.
+	;;ip6.arpa.		84600	IN	NS	c.ip6-servers.arpa.
+	;;ip6.arpa.		84600	IN	NS	d.ip6-servers.arpa.
+	;;ip6.arpa.		84600	IN	NS	e.ip6-servers.arpa.
+	;;ip6.arpa.		84600	IN	NS	f.ip6-servers.arpa.
+	a.ip6-servers.arpa.	86400	IN	A	199.212.0.73
+	a.ip6-servers.arpa.	86400	IN	AAAA	2001:500:13::73
+	;;b.ip6-servers.arpa.	86400	IN	A	199.253.182.182
+	;;b.ip6-servers.arpa.	86400	IN	AAAA	2001:500:86::86
+	;;c.ip6-servers.arpa.	86400	IN	A	196.216.169.11
+	;;c.ip6-servers.arpa.	86400	IN	AAAA	2001:43f8:110::11
+	;;d.ip6-servers.arpa.	86400	IN	A	200.7.86.53
+	;;d.ip6-servers.arpa.	86400	IN	AAAA	2001:13c7:7012::53
+	;;e.ip6-servers.arpa.	86400	IN	A	202.12.29.59
+	;;e.ip6-servers.arpa.	86400	IN	AAAA	2001:dc0:2001:a:4608::59
+	;;f.ip6-servers.arpa.	86400	IN	A	193.0.9.2
+	;;f.ip6-servers.arpa.	86400	IN	AAAA	2001:67c:e0::2
+	a.b.e.b.8.b.d.0.1.0.0.2			86400	IN	NS	ns.exemplo.psi.br.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/in-addr.arpa.zone
+	custom-command /etc/bind/in-addr.arpa.zone
+	config {
+	in-addr.arpa.		3600	IN	SOA	a.in-addr-servers.arpa. nstld.iana.org. 2011027861 1800 900 604800 3600
+	in-addr.arpa.		86400	IN	NS	a.in-addr-servers.arpa.
+	;;in-addr.arpa.		86400	IN	NS	b.in-addr-servers.arpa.
+	;;in-addr.arpa.		86400	IN	NS	c.in-addr-servers.arpa.
+	;;in-addr.arpa.		86400	IN	NS	d.in-addr-servers.arpa.
+	;;in-addr.arpa.		86400	IN	NS	e.in-addr-servers.arpa.
+	;;in-addr.arpa.		86400	IN	NS	f.in-addr-servers.arpa.
+	a.in-addr-servers.arpa.	86400	IN	A	199.212.0.73
+	a.in-addr-servers.arpa.	86400	IN	AAAA	2001:500:13::73
+	;;b.in-addr-servers.arpa.	86400	IN	A	199.253.183.183
+	;;b.in-addr-servers.arpa.	86400	IN	AAAA	2001:500:87::87
+	;;c.in-addr-servers.arpa.	86400	IN	A	196.216.169.10
+	;;c.in-addr-servers.arpa.	86400	IN	AAAA	2001:43f8:110::10
+	;;d.in-addr-servers.arpa.	86400	IN	A	200.10.60.53
+	;;d.in-addr-servers.arpa.	86400	IN	AAAA	2001:13c7:7010::53
+	;;e.in-addr-servers.arpa.	86400	IN	A	203.119.86.101
+	;;e.in-addr-servers.arpa.	86400	IN	AAAA	2001:dd8:6::101
+	;;f.in-addr-servers.arpa.	86400	IN	A	193.0.9.1
+	;;f.in-addr-servers.arpa.	86400	IN	AAAA	2001:67c:e0::1
+	113.0.203			86400	IN	NS	ns.exemplo.psi.br.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.255
+	custom-command /etc/bind/db.255
+	config {
+	;
+	; BIND reverse data file for broadcast zone
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.0
+	custom-command /etc/bind/db.0
+	config {
+	;
+	; BIND reverse data file for broadcast zone
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.127
+	custom-command /etc/bind/db.127
+	config {
+	;
+	; BIND reverse data file for local loopback interface
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	1.0.0	IN	PTR	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.local
+	custom-command /etc/bind/db.local
+	config {
+	;
+	; BIND data file for local loopback interface
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      2		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	@	IN	A	127.0.0.1
+	@	IN	AAAA	::1
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.root
+	custom-command /etc/bind/db.root
+	config {
+	;       This file holds the information on root name servers needed to
+	;       initialize cache of Internet domain name servers
+	;       (e.g. reference this file in the "cache  .  <file>"
+	;       configuration file of BIND domain name servers).
+	;
+	;       This file is made available by InterNIC 
+	;       under anonymous FTP as
+	;           file                /domain/named.cache
+	;           on server           FTP.INTERNIC.NET
+	;       -OR-                    RS.INTERNIC.NET
+	;
+	;       last update:    Jun 17, 2010
+	;       related version of root zone:   2010061700
+	;
+	; formerly NS.INTERNIC.NET
+	;
+	.                        3600000  IN  NS    A.ROOT-SERVERS.NET.
+	A.ROOT-SERVERS.NET.      3600000      A     198.41.0.4
+	A.ROOT-SERVERS.NET.      3600000      AAAA  2001:503:BA3E::2:30
+	;
+	; FORMERLY NS1.ISI.EDU
+	;
+	.                        3600000      NS    B.ROOT-SERVERS.NET.
+	B.ROOT-SERVERS.NET.      3600000      A     192.228.79.201
+	;
+	; FORMERLY C.PSI.NET
+	;
+	.                        3600000      NS    C.ROOT-SERVERS.NET.
+	C.ROOT-SERVERS.NET.      3600000      A     192.33.4.12
+	;
+	; FORMERLY TERP.UMD.EDU
+	;
+	.                        3600000      NS    D.ROOT-SERVERS.NET.
+	D.ROOT-SERVERS.NET.      3600000      A     128.8.10.90
+	;
+	; FORMERLY NS.NASA.GOV
+	;
+	.                        3600000      NS    E.ROOT-SERVERS.NET.
+	E.ROOT-SERVERS.NET.      3600000      A     192.203.230.10
+	;
+	; FORMERLY NS.ISC.ORG
+	;
+	.                        3600000      NS    F.ROOT-SERVERS.NET.
+	F.ROOT-SERVERS.NET.      3600000      A     192.5.5.241
+	F.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:2F::F
+	;
+	; FORMERLY NS.NIC.DDN.MIL
+	;
+	.                        3600000      NS    G.ROOT-SERVERS.NET.
+	G.ROOT-SERVERS.NET.      3600000      A     192.112.36.4
+	;
+	; FORMERLY AOS.ARL.ARMY.MIL
+	;
+	.                        3600000      NS    H.ROOT-SERVERS.NET.
+	H.ROOT-SERVERS.NET.      3600000      A     128.63.2.53
+	H.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:1::803F:235
+	;
+	; FORMERLY NIC.NORDU.NET
+	;
+	.                        3600000      NS    I.ROOT-SERVERS.NET.
+	I.ROOT-SERVERS.NET.      3600000      A     192.36.148.17
+	I.ROOT-SERVERS.NET.      3600000      AAAA  2001:7FE::53
+	;
+	; OPERATED BY VERISIGN, INC.
+	;
+	.                        3600000      NS    J.ROOT-SERVERS.NET.
+	J.ROOT-SERVERS.NET.      3600000      A     192.58.128.30
+	J.ROOT-SERVERS.NET.      3600000      AAAA  2001:503:C27::2:30
+	;
+	; OPERATED BY RIPE NCC
+	;
+	.                        3600000      NS    K.ROOT-SERVERS.NET.
+	K.ROOT-SERVERS.NET.      3600000      A     193.0.14.129
+	K.ROOT-SERVERS.NET.      3600000      AAAA  2001:7FD::1
+	;
+	; OPERATED BY ICANN
+	;
+	.                        3600000      NS    L.ROOT-SERVERS.NET.
+	L.ROOT-SERVERS.NET.      3600000      A     199.7.83.42
+	L.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:3::42
+	;
+	; OPERATED BY WIDE
+	;
+	.                        3600000      NS    M.ROOT-SERVERS.NET.
+	M.ROOT-SERVERS.NET.      3600000      A     202.12.27.33
+	M.ROOT-SERVERS.NET.      3600000      AAAA  2001:DC3::35
+	; End of File
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf.default-zones
+	custom-command /etc/bind/named.conf.default-zones
+	config {
+	// prime the server with knowledge of the root servers
+	zone "." {
+		type hint;
+		file "/etc/bind/db.root";
+	};
+	
+	// be authoritative for the localhost forward and reverse zones, and for
+	// broadcast zones as per RFC 1912
+	
+	zone "localhost" {
+		type master;
+		file "/etc/bind/db.local";
+	};
+	
+	zone "127.in-addr.arpa" {
+		type master;
+		file "/etc/bind/db.127";
+	};
+	
+	zone "0.in-addr.arpa" {
+		type master;
+		file "/etc/bind/db.0";
+	};
+	
+	zone "255.in-addr.arpa" {
+		type master;
+		file "/etc/bind/db.255";
+	};
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.empty
+	custom-command /etc/bind/db.empty
+	config {
+	; BIND reverse data file for empty rfc1918 zone
+	;
+	; DO NOT EDIT THIS FILE - it is used for multiple zones.
+	; Instead, copy it, edit named.conf, and use that copy.
+	;
+	$TTL	86400
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				  86400 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/zones.rfc1918
+	custom-command /etc/bind/zones.rfc1918
+	config {
+	zone "10.in-addr.arpa"      { type master; file "/etc/bind/db.empty"; };
+	 
+	zone "16.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "17.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "18.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "19.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "20.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "21.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "22.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "23.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "24.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "25.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "26.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "27.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "28.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "29.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "30.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "31.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	
+	zone "168.192.in-addr.arpa" { type master; file "/etc/bind/db.empty"; };
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf.local
+	custom-command /etc/bind/named.conf.local
+	config {
+	//
+	// Do any local configuration here
+	//
+	
+	// Consider adding the 1918 zones here, if they are not used in your
+	// organization
+	//include "/etc/bind/zones.rfc1918";
+	
+	include "/etc/bind/zones.rfc1918";
+	
+	zone "in-addr.arpa" { type master; file "/etc/bind/in-addr.arpa.zone"; };
+	zone "ip6.arpa"     { type master; file "/etc/bind/ip6.arpa.zone"; };
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf.options
+	custom-command /etc/bind/named.conf.options
+	config {
+	options {
+		directory "/var/cache/bind";
+	
+		// If there is a firewall between you and nameservers you want
+		// to talk to, you may need to fix the firewall to allow multiple
+		// ports to talk.  See http://www.kb.cert.org/vuls/id/800113
+	
+		// If your ISP provided one or more IP addresses for stable 
+		// nameservers, you probably want to use them as forwarders.  
+		// Uncomment the following block, and insert the addresses replacing 
+		// the all-0's placeholder.
+	
+		// forwarders {
+		// 	0.0.0.0;
+		// };
+	
+		//========================================================================
+		// If BIND logs error messages about the root key being expired,
+		// you will need to update your keys.  See https://www.isc.org/bind-keys
+		//========================================================================
+		dnssec-validation no;
+	
+		auth-nxdomain no;    # conform to RFC1035
+		allow-query { any; };
+		listen-on { any; };
+		listen-on-v6 { any; };
+		recursion no;
+		root-delegation-only;
+	};
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf
+	custom-command /etc/bind/named.conf
+	config {
+	// This is the primary configuration file for the BIND DNS server named.
+	//
+	// Please read /usr/share/doc/bind9/README.Debian.gz for information on the 
+	// structure of BIND configuration files in Debian, *BEFORE* you customize 
+	// this configuration file.
+	//
+	// If you are just adding zones, please do that in /etc/bind/named.conf.local
+	
+	include "/etc/bind/named.conf.options";
+	include "/etc/bind/named.conf.local";
+	include "/etc/bind/named.conf.default-zones";
+	
+	}
+    }
+}
+
+node n6 {
+    type router
+    model host
+    network-config {
+	hostname n6DNSbr_E
+	!
+	interface eth0
+	 ip address 200.229.248.10/24
+	 ipv6 address 2001:12f8:1::10/64
+	!
+    }
+    canvas c1
+    iconcoords {546.3333333333334 413.0}
+    labelcoords {539.6666666666666 463.33333333333337}
+    interface-peer {eth0 n7}
+    services {DefaultRoute UserDefined}
+    custom-config {
+	custom-config-id service:UserDefined
+	custom-command UserDefined
+	config {
+	dirs=('/etc/bind', '/var/cache/bind', )
+	files=('/etc/bind/named.conf', '/etc/bind/named.conf.options', '/etc/bind/named.conf.local', '/etc/bind/zones.rfc1918', '/etc/bind/db.empty', '/etc/bind/named.conf.default-zones', '/etc/bind/db.root', '/etc/bind/db.local', '/etc/bind/db.127', '/etc/bind/db.0', '/etc/bind/db.255', '/etc/bind/br.zone', '/etc/bind/adm.br.zone', '/etc/bind/adv.br.zone', '/etc/bind/agr.br.zone', '/etc/bind/am.br.zone', '/etc/bind/arq.br.zone', '/etc/bind/art.br.zone', '/etc/bind/ato.br.zone', '/etc/bind/b.br.zone', '/etc/bind/bio.br.zone', '/etc/bind/blog.br.zone', '/etc/bind/bmd.br.zone', '/etc/bind/cim.br.zone', '/etc/bind/cng.br.zone', '/etc/bind/cnt.br.zone', '/etc/bind/com.br.zone', '/etc/bind/coop.br.zone', '/etc/bind/ecn.br.zone', '/etc/bind/eco.br.zone', '/etc/bind/emp.br.zone', '/etc/bind/eng.br.zone', '/etc/bind/esp.br.zone', '/etc/bind/etc.br.zone', '/etc/bind/eti.br.zone', '/etc/bind/far.br.zone', '/etc/bind/flog.br.zone', '/etc/bind/fm.br.zone', '/etc/bind/fnd.br.zone', '/etc/bind/fot.br.zone', '/etc/bind/fst.br.zone', '/etc/bind/g12.br.zone', '/etc/bind/ggf.br.zone', '/etc/bind/imb.br.zone', '/etc/bind/ind.br.zone', '/etc/bind/inf.br.zone', '/etc/bind/jor.br.zone', '/etc/bind/jus.br.zone', '/etc/bind/leg.br.zone', '/etc/bind/lel.br.zone', '/etc/bind/mat.br.zone', '/etc/bind/med.br.zone', '/etc/bind/mil.br.zone', '/etc/bind/mp.br.zone', '/etc/bind/mus.br.zone', '/etc/bind/net.br.zone', '/etc/bind/nom.br.zone', '/etc/bind/not.br.zone', '/etc/bind/ntr.br.zone', '/etc/bind/odo.br.zone', '/etc/bind/org.br.zone', '/etc/bind/ppg.br.zone', '/etc/bind/pro.br.zone', '/etc/bind/psc.br.zone', '/etc/bind/psi.br.zone', '/etc/bind/qsl.br.zone', '/etc/bind/radio.br.zone', '/etc/bind/rec.br.zone', '/etc/bind/slg.br.zone', '/etc/bind/srv.br.zone', '/etc/bind/taxi.br.zone', '/etc/bind/teo.br.zone', '/etc/bind/tmp.br.zone', '/etc/bind/trd.br.zone', '/etc/bind/tur.br.zone', '/etc/bind/tv.br.zone', '/etc/bind/vet.br.zone', '/etc/bind/vlog.br.zone', '/etc/bind/wiki.br.zone', '/etc/bind/zlg.br.zone', )
+	cmdup=('/etc/init.d/bind9 start', )
+	cmddown=('/etc/init.d/bind9 stop', )
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/zlg.br.zone
+	custom-command /etc/bind/zlg.br.zone
+	config {
+	zlg.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	zlg.br.			172800	IN	NS	a.dns.br.
+	zlg.br.			172800	IN	NS	b.dns.br.
+	zlg.br.			172800	IN	NS	c.dns.br.
+	zlg.br.			172800	IN	NS	d.dns.br.
+	zlg.br.			172800	IN	NS	e.dns.br.
+	zlg.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/wiki.br.zone
+	custom-command /etc/bind/wiki.br.zone
+	config {
+	wiki.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	wiki.br.			172800	IN	NS	a.dns.br.
+	wiki.br.			172800	IN	NS	b.dns.br.
+	wiki.br.			172800	IN	NS	c.dns.br.
+	wiki.br.			172800	IN	NS	d.dns.br.
+	wiki.br.			172800	IN	NS	e.dns.br.
+	wiki.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/vlog.br.zone
+	custom-command /etc/bind/vlog.br.zone
+	config {
+	vlog.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	vlog.br.			172800	IN	NS	a.dns.br.
+	vlog.br.			172800	IN	NS	b.dns.br.
+	vlog.br.			172800	IN	NS	c.dns.br.
+	vlog.br.			172800	IN	NS	d.dns.br.
+	vlog.br.			172800	IN	NS	e.dns.br.
+	vlog.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/vet.br.zone
+	custom-command /etc/bind/vet.br.zone
+	config {
+	vet.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	vet.br.			172800	IN	NS	a.dns.br.
+	vet.br.			172800	IN	NS	b.dns.br.
+	vet.br.			172800	IN	NS	c.dns.br.
+	vet.br.			172800	IN	NS	d.dns.br.
+	vet.br.			172800	IN	NS	e.dns.br.
+	vet.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/tv.br.zone
+	custom-command /etc/bind/tv.br.zone
+	config {
+	tv.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	tv.br.			172800	IN	NS	a.dns.br.
+	tv.br.			172800	IN	NS	b.dns.br.
+	tv.br.			172800	IN	NS	c.dns.br.
+	tv.br.			172800	IN	NS	d.dns.br.
+	tv.br.			172800	IN	NS	e.dns.br.
+	tv.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/tur.br.zone
+	custom-command /etc/bind/tur.br.zone
+	config {
+	tur.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	tur.br.			172800	IN	NS	a.dns.br.
+	tur.br.			172800	IN	NS	b.dns.br.
+	tur.br.			172800	IN	NS	c.dns.br.
+	tur.br.			172800	IN	NS	d.dns.br.
+	tur.br.			172800	IN	NS	e.dns.br.
+	tur.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/trd.br.zone
+	custom-command /etc/bind/trd.br.zone
+	config {
+	trd.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	trd.br.			172800	IN	NS	a.dns.br.
+	trd.br.			172800	IN	NS	b.dns.br.
+	trd.br.			172800	IN	NS	c.dns.br.
+	trd.br.			172800	IN	NS	d.dns.br.
+	trd.br.			172800	IN	NS	e.dns.br.
+	trd.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/tmp.br.zone
+	custom-command /etc/bind/tmp.br.zone
+	config {
+	tmp.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	tmp.br.			172800	IN	NS	a.dns.br.
+	tmp.br.			172800	IN	NS	b.dns.br.
+	tmp.br.			172800	IN	NS	c.dns.br.
+	tmp.br.			172800	IN	NS	d.dns.br.
+	tmp.br.			172800	IN	NS	e.dns.br.
+	tmp.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/teo.br.zone
+	custom-command /etc/bind/teo.br.zone
+	config {
+	teo.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	teo.br.			172800	IN	NS	a.dns.br.
+	teo.br.			172800	IN	NS	b.dns.br.
+	teo.br.			172800	IN	NS	c.dns.br.
+	teo.br.			172800	IN	NS	d.dns.br.
+	teo.br.			172800	IN	NS	e.dns.br.
+	teo.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/taxi.br.zone
+	custom-command /etc/bind/taxi.br.zone
+	config {
+	taxi.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	taxi.br.			172800	IN	NS	a.dns.br.
+	taxi.br.			172800	IN	NS	b.dns.br.
+	taxi.br.			172800	IN	NS	c.dns.br.
+	taxi.br.			172800	IN	NS	d.dns.br.
+	taxi.br.			172800	IN	NS	e.dns.br.
+	taxi.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/srv.br.zone
+	custom-command /etc/bind/srv.br.zone
+	config {
+	srv.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	srv.br.			172800	IN	NS	a.dns.br.
+	srv.br.			172800	IN	NS	b.dns.br.
+	srv.br.			172800	IN	NS	c.dns.br.
+	srv.br.			172800	IN	NS	d.dns.br.
+	srv.br.			172800	IN	NS	e.dns.br.
+	srv.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/slg.br.zone
+	custom-command /etc/bind/slg.br.zone
+	config {
+	slg.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	slg.br.			172800	IN	NS	a.dns.br.
+	slg.br.			172800	IN	NS	b.dns.br.
+	slg.br.			172800	IN	NS	c.dns.br.
+	slg.br.			172800	IN	NS	d.dns.br.
+	slg.br.			172800	IN	NS	e.dns.br.
+	slg.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/rec.br.zone
+	custom-command /etc/bind/rec.br.zone
+	config {
+	rec.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	rec.br.			172800	IN	NS	a.dns.br.
+	rec.br.			172800	IN	NS	b.dns.br.
+	rec.br.			172800	IN	NS	c.dns.br.
+	rec.br.			172800	IN	NS	d.dns.br.
+	rec.br.			172800	IN	NS	e.dns.br.
+	rec.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/radio.br.zone
+	custom-command /etc/bind/radio.br.zone
+	config {
+	radio.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	radio.br.			172800	IN	NS	a.dns.br.
+	radio.br.			172800	IN	NS	b.dns.br.
+	radio.br.			172800	IN	NS	c.dns.br.
+	radio.br.			172800	IN	NS	d.dns.br.
+	radio.br.			172800	IN	NS	e.dns.br.
+	radio.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/qsl.br.zone
+	custom-command /etc/bind/qsl.br.zone
+	config {
+	qsl.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	qsl.br.			172800	IN	NS	a.dns.br.
+	qsl.br.			172800	IN	NS	b.dns.br.
+	qsl.br.			172800	IN	NS	c.dns.br.
+	qsl.br.			172800	IN	NS	d.dns.br.
+	qsl.br.			172800	IN	NS	e.dns.br.
+	qsl.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/psi.br.zone
+	custom-command /etc/bind/psi.br.zone
+	config {
+	psi.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	psi.br.			172800	IN	NS	a.dns.br.
+	psi.br.			172800	IN	NS	b.dns.br.
+	psi.br.			172800	IN	NS	c.dns.br.
+	psi.br.			172800	IN	NS	d.dns.br.
+	psi.br.			172800	IN	NS	e.dns.br.
+	psi.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	exemplo		172800	IN	NS	ns.exemplo.psi.br.
+	ns.exemplo		172800	IN	A	203.0.113.2
+	ns.exemplo		172800	IN	AAAA	2001:db8:beba:cafe:0:0:0:2
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/psc.br.zone
+	custom-command /etc/bind/psc.br.zone
+	config {
+	psc.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	psc.br.			172800	IN	NS	a.dns.br.
+	psc.br.			172800	IN	NS	b.dns.br.
+	psc.br.			172800	IN	NS	c.dns.br.
+	psc.br.			172800	IN	NS	d.dns.br.
+	psc.br.			172800	IN	NS	e.dns.br.
+	psc.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/pro.br.zone
+	custom-command /etc/bind/pro.br.zone
+	config {
+	pro.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	pro.br.			172800	IN	NS	a.dns.br.
+	pro.br.			172800	IN	NS	b.dns.br.
+	pro.br.			172800	IN	NS	c.dns.br.
+	pro.br.			172800	IN	NS	d.dns.br.
+	pro.br.			172800	IN	NS	e.dns.br.
+	pro.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/ppg.br.zone
+	custom-command /etc/bind/ppg.br.zone
+	config {
+	ppg.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	ppg.br.			172800	IN	NS	a.dns.br.
+	ppg.br.			172800	IN	NS	b.dns.br.
+	ppg.br.			172800	IN	NS	c.dns.br.
+	ppg.br.			172800	IN	NS	d.dns.br.
+	ppg.br.			172800	IN	NS	e.dns.br.
+	ppg.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/org.br.zone
+	custom-command /etc/bind/org.br.zone
+	config {
+	org.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	org.br.			172800	IN	NS	a.dns.br.
+	org.br.			172800	IN	NS	b.dns.br.
+	org.br.			172800	IN	NS	c.dns.br.
+	org.br.			172800	IN	NS	d.dns.br.
+	org.br.			172800	IN	NS	e.dns.br.
+	org.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/odo.br.zone
+	custom-command /etc/bind/odo.br.zone
+	config {
+	odo.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	odo.br.			172800	IN	NS	a.dns.br.
+	odo.br.			172800	IN	NS	b.dns.br.
+	odo.br.			172800	IN	NS	c.dns.br.
+	odo.br.			172800	IN	NS	d.dns.br.
+	odo.br.			172800	IN	NS	e.dns.br.
+	odo.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/ntr.br.zone
+	custom-command /etc/bind/ntr.br.zone
+	config {
+	ntr.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	ntr.br.			172800	IN	NS	a.dns.br.
+	ntr.br.			172800	IN	NS	b.dns.br.
+	ntr.br.			172800	IN	NS	c.dns.br.
+	ntr.br.			172800	IN	NS	d.dns.br.
+	ntr.br.			172800	IN	NS	e.dns.br.
+	ntr.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/not.br.zone
+	custom-command /etc/bind/not.br.zone
+	config {
+	not.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	not.br.			172800	IN	NS	a.dns.br.
+	not.br.			172800	IN	NS	b.dns.br.
+	not.br.			172800	IN	NS	c.dns.br.
+	not.br.			172800	IN	NS	d.dns.br.
+	not.br.			172800	IN	NS	e.dns.br.
+	not.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/nom.br.zone
+	custom-command /etc/bind/nom.br.zone
+	config {
+	nom.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	nom.br.			172800	IN	NS	a.dns.br.
+	nom.br.			172800	IN	NS	b.dns.br.
+	nom.br.			172800	IN	NS	c.dns.br.
+	nom.br.			172800	IN	NS	d.dns.br.
+	nom.br.			172800	IN	NS	e.dns.br.
+	nom.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/net.br.zone
+	custom-command /etc/bind/net.br.zone
+	config {
+	net.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	net.br.			172800	IN	NS	a.dns.br.
+	net.br.			172800	IN	NS	b.dns.br.
+	net.br.			172800	IN	NS	c.dns.br.
+	net.br.			172800	IN	NS	d.dns.br.
+	net.br.			172800	IN	NS	e.dns.br.
+	net.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/mus.br.zone
+	custom-command /etc/bind/mus.br.zone
+	config {
+	mus.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	mus.br.			172800	IN	NS	a.dns.br.
+	mus.br.			172800	IN	NS	b.dns.br.
+	mus.br.			172800	IN	NS	c.dns.br.
+	mus.br.			172800	IN	NS	d.dns.br.
+	mus.br.			172800	IN	NS	e.dns.br.
+	mus.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/mp.br.zone
+	custom-command /etc/bind/mp.br.zone
+	config {
+	mp.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	mp.br.			172800	IN	NS	a.dns.br.
+	mp.br.			172800	IN	NS	b.dns.br.
+	mp.br.			172800	IN	NS	c.dns.br.
+	mp.br.			172800	IN	NS	d.dns.br.
+	mp.br.			172800	IN	NS	e.dns.br.
+	mp.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/mil.br.zone
+	custom-command /etc/bind/mil.br.zone
+	config {
+	mil.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	mil.br.			172800	IN	NS	a.dns.br.
+	mil.br.			172800	IN	NS	b.dns.br.
+	mil.br.			172800	IN	NS	c.dns.br.
+	mil.br.			172800	IN	NS	d.dns.br.
+	mil.br.			172800	IN	NS	e.dns.br.
+	mil.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/med.br.zone
+	custom-command /etc/bind/med.br.zone
+	config {
+	med.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	med.br.			172800	IN	NS	a.dns.br.
+	med.br.			172800	IN	NS	b.dns.br.
+	med.br.			172800	IN	NS	c.dns.br.
+	med.br.			172800	IN	NS	d.dns.br.
+	med.br.			172800	IN	NS	e.dns.br.
+	med.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/mat.br.zone
+	custom-command /etc/bind/mat.br.zone
+	config {
+	mat.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	mat.br.			172800	IN	NS	a.dns.br.
+	mat.br.			172800	IN	NS	b.dns.br.
+	mat.br.			172800	IN	NS	c.dns.br.
+	mat.br.			172800	IN	NS	d.dns.br.
+	mat.br.			172800	IN	NS	e.dns.br.
+	mat.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/lel.br.zone
+	custom-command /etc/bind/lel.br.zone
+	config {
+	lel.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	lel.br.			172800	IN	NS	a.dns.br.
+	lel.br.			172800	IN	NS	b.dns.br.
+	lel.br.			172800	IN	NS	c.dns.br.
+	lel.br.			172800	IN	NS	d.dns.br.
+	lel.br.			172800	IN	NS	e.dns.br.
+	lel.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/leg.br.zone
+	custom-command /etc/bind/leg.br.zone
+	config {
+	leg.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	leg.br.			172800	IN	NS	a.dns.br.
+	leg.br.			172800	IN	NS	b.dns.br.
+	leg.br.			172800	IN	NS	c.dns.br.
+	leg.br.			172800	IN	NS	d.dns.br.
+	leg.br.			172800	IN	NS	e.dns.br.
+	leg.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/jus.br.zone
+	custom-command /etc/bind/jus.br.zone
+	config {
+	jus.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	jus.br.			172800	IN	NS	a.dns.br.
+	jus.br.			172800	IN	NS	b.dns.br.
+	jus.br.			172800	IN	NS	c.dns.br.
+	jus.br.			172800	IN	NS	d.dns.br.
+	jus.br.			172800	IN	NS	e.dns.br.
+	jus.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/jor.br.zone
+	custom-command /etc/bind/jor.br.zone
+	config {
+	jor.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	jor.br.			172800	IN	NS	a.dns.br.
+	jor.br.			172800	IN	NS	b.dns.br.
+	jor.br.			172800	IN	NS	c.dns.br.
+	jor.br.			172800	IN	NS	d.dns.br.
+	jor.br.			172800	IN	NS	e.dns.br.
+	jor.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/inf.br.zone
+	custom-command /etc/bind/inf.br.zone
+	config {
+	inf.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	inf.br.			172800	IN	NS	a.dns.br.
+	inf.br.			172800	IN	NS	b.dns.br.
+	inf.br.			172800	IN	NS	c.dns.br.
+	inf.br.			172800	IN	NS	d.dns.br.
+	inf.br.			172800	IN	NS	e.dns.br.
+	inf.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/ind.br.zone
+	custom-command /etc/bind/ind.br.zone
+	config {
+	ind.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	ind.br.			172800	IN	NS	a.dns.br.
+	ind.br.			172800	IN	NS	b.dns.br.
+	ind.br.			172800	IN	NS	c.dns.br.
+	ind.br.			172800	IN	NS	d.dns.br.
+	ind.br.			172800	IN	NS	e.dns.br.
+	ind.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/imb.br.zone
+	custom-command /etc/bind/imb.br.zone
+	config {
+	imb.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	imb.br.			172800	IN	NS	a.dns.br.
+	imb.br.			172800	IN	NS	b.dns.br.
+	imb.br.			172800	IN	NS	c.dns.br.
+	imb.br.			172800	IN	NS	d.dns.br.
+	imb.br.			172800	IN	NS	e.dns.br.
+	imb.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/ggf.br.zone
+	custom-command /etc/bind/ggf.br.zone
+	config {
+	ggf.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	ggf.br.			172800	IN	NS	a.dns.br.
+	ggf.br.			172800	IN	NS	b.dns.br.
+	ggf.br.			172800	IN	NS	c.dns.br.
+	ggf.br.			172800	IN	NS	d.dns.br.
+	ggf.br.			172800	IN	NS	e.dns.br.
+	ggf.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/g12.br.zone
+	custom-command /etc/bind/g12.br.zone
+	config {
+	g12.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	g12.br.			172800	IN	NS	a.dns.br.
+	g12.br.			172800	IN	NS	b.dns.br.
+	g12.br.			172800	IN	NS	c.dns.br.
+	g12.br.			172800	IN	NS	d.dns.br.
+	g12.br.			172800	IN	NS	e.dns.br.
+	g12.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/fst.br.zone
+	custom-command /etc/bind/fst.br.zone
+	config {
+	fst.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	fst.br.			172800	IN	NS	a.dns.br.
+	fst.br.			172800	IN	NS	b.dns.br.
+	fst.br.			172800	IN	NS	c.dns.br.
+	fst.br.			172800	IN	NS	d.dns.br.
+	fst.br.			172800	IN	NS	e.dns.br.
+	fst.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/fot.br.zone
+	custom-command /etc/bind/fot.br.zone
+	config {
+	fot.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	fot.br.			172800	IN	NS	a.dns.br.
+	fot.br.			172800	IN	NS	b.dns.br.
+	fot.br.			172800	IN	NS	c.dns.br.
+	fot.br.			172800	IN	NS	d.dns.br.
+	fot.br.			172800	IN	NS	e.dns.br.
+	fot.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/fnd.br.zone
+	custom-command /etc/bind/fnd.br.zone
+	config {
+	fnd.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	fnd.br.			172800	IN	NS	a.dns.br.
+	fnd.br.			172800	IN	NS	b.dns.br.
+	fnd.br.			172800	IN	NS	c.dns.br.
+	fnd.br.			172800	IN	NS	d.dns.br.
+	fnd.br.			172800	IN	NS	e.dns.br.
+	fnd.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/fm.br.zone
+	custom-command /etc/bind/fm.br.zone
+	config {
+	fm.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	fm.br.			172800	IN	NS	a.dns.br.
+	fm.br.			172800	IN	NS	b.dns.br.
+	fm.br.			172800	IN	NS	c.dns.br.
+	fm.br.			172800	IN	NS	d.dns.br.
+	fm.br.			172800	IN	NS	e.dns.br.
+	fm.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/flog.br.zone
+	custom-command /etc/bind/flog.br.zone
+	config {
+	flog.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	flog.br.			172800	IN	NS	a.dns.br.
+	flog.br.			172800	IN	NS	b.dns.br.
+	flog.br.			172800	IN	NS	c.dns.br.
+	flog.br.			172800	IN	NS	d.dns.br.
+	flog.br.			172800	IN	NS	e.dns.br.
+	flog.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/far.br.zone
+	custom-command /etc/bind/far.br.zone
+	config {
+	far.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	far.br.			172800	IN	NS	a.dns.br.
+	far.br.			172800	IN	NS	b.dns.br.
+	far.br.			172800	IN	NS	c.dns.br.
+	far.br.			172800	IN	NS	d.dns.br.
+	far.br.			172800	IN	NS	e.dns.br.
+	far.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/eti.br.zone
+	custom-command /etc/bind/eti.br.zone
+	config {
+	eti.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	eti.br.			172800	IN	NS	a.dns.br.
+	eti.br.			172800	IN	NS	b.dns.br.
+	eti.br.			172800	IN	NS	c.dns.br.
+	eti.br.			172800	IN	NS	d.dns.br.
+	eti.br.			172800	IN	NS	e.dns.br.
+	eti.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/etc.br.zone
+	custom-command /etc/bind/etc.br.zone
+	config {
+	etc.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	etc.br.			172800	IN	NS	a.dns.br.
+	etc.br.			172800	IN	NS	b.dns.br.
+	etc.br.			172800	IN	NS	c.dns.br.
+	etc.br.			172800	IN	NS	d.dns.br.
+	etc.br.			172800	IN	NS	e.dns.br.
+	etc.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/esp.br.zone
+	custom-command /etc/bind/esp.br.zone
+	config {
+	esp.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	esp.br.			172800	IN	NS	a.dns.br.
+	esp.br.			172800	IN	NS	b.dns.br.
+	esp.br.			172800	IN	NS	c.dns.br.
+	esp.br.			172800	IN	NS	d.dns.br.
+	esp.br.			172800	IN	NS	e.dns.br.
+	esp.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/eng.br.zone
+	custom-command /etc/bind/eng.br.zone
+	config {
+	eng.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	eng.br.			172800	IN	NS	a.dns.br.
+	eng.br.			172800	IN	NS	b.dns.br.
+	eng.br.			172800	IN	NS	c.dns.br.
+	eng.br.			172800	IN	NS	d.dns.br.
+	eng.br.			172800	IN	NS	e.dns.br.
+	eng.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/emp.br.zone
+	custom-command /etc/bind/emp.br.zone
+	config {
+	emp.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	emp.br.			172800	IN	NS	a.dns.br.
+	emp.br.			172800	IN	NS	b.dns.br.
+	emp.br.			172800	IN	NS	c.dns.br.
+	emp.br.			172800	IN	NS	d.dns.br.
+	emp.br.			172800	IN	NS	e.dns.br.
+	emp.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/eco.br.zone
+	custom-command /etc/bind/eco.br.zone
+	config {
+	eco.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	eco.br.			172800	IN	NS	a.dns.br.
+	eco.br.			172800	IN	NS	b.dns.br.
+	eco.br.			172800	IN	NS	c.dns.br.
+	eco.br.			172800	IN	NS	d.dns.br.
+	eco.br.			172800	IN	NS	e.dns.br.
+	eco.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/ecn.br.zone
+	custom-command /etc/bind/ecn.br.zone
+	config {
+	ecn.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	ecn.br.			172800	IN	NS	a.dns.br.
+	ecn.br.			172800	IN	NS	b.dns.br.
+	ecn.br.			172800	IN	NS	c.dns.br.
+	ecn.br.			172800	IN	NS	d.dns.br.
+	ecn.br.			172800	IN	NS	e.dns.br.
+	ecn.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/coop.br.zone
+	custom-command /etc/bind/coop.br.zone
+	config {
+	coop.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	coop.br.			172800	IN	NS	a.dns.br.
+	coop.br.			172800	IN	NS	b.dns.br.
+	coop.br.			172800	IN	NS	c.dns.br.
+	coop.br.			172800	IN	NS	d.dns.br.
+	coop.br.			172800	IN	NS	e.dns.br.
+	coop.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/com.br.zone
+	custom-command /etc/bind/com.br.zone
+	config {
+	com.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	com.br.			172800	IN	NS	a.dns.br.
+	com.br.			172800	IN	NS	b.dns.br.
+	com.br.			172800	IN	NS	c.dns.br.
+	com.br.			172800	IN	NS	d.dns.br.
+	com.br.			172800	IN	NS	e.dns.br.
+	com.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/cnt.br.zone
+	custom-command /etc/bind/cnt.br.zone
+	config {
+	cnt.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	cnt.br.			172800	IN	NS	a.dns.br.
+	cnt.br.			172800	IN	NS	b.dns.br.
+	cnt.br.			172800	IN	NS	c.dns.br.
+	cnt.br.			172800	IN	NS	d.dns.br.
+	cnt.br.			172800	IN	NS	e.dns.br.
+	cnt.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/cng.br.zone
+	custom-command /etc/bind/cng.br.zone
+	config {
+	cng.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	cng.br.			172800	IN	NS	a.dns.br.
+	cng.br.			172800	IN	NS	b.dns.br.
+	cng.br.			172800	IN	NS	c.dns.br.
+	cng.br.			172800	IN	NS	d.dns.br.
+	cng.br.			172800	IN	NS	e.dns.br.
+	cng.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/cim.br.zone
+	custom-command /etc/bind/cim.br.zone
+	config {
+	cim.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	cim.br.			172800	IN	NS	a.dns.br.
+	cim.br.			172800	IN	NS	b.dns.br.
+	cim.br.			172800	IN	NS	c.dns.br.
+	cim.br.			172800	IN	NS	d.dns.br.
+	cim.br.			172800	IN	NS	e.dns.br.
+	cim.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/bmd.br.zone
+	custom-command /etc/bind/bmd.br.zone
+	config {
+	bmd.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	bmd.br.			172800	IN	NS	a.dns.br.
+	bmd.br.			172800	IN	NS	b.dns.br.
+	bmd.br.			172800	IN	NS	c.dns.br.
+	bmd.br.			172800	IN	NS	d.dns.br.
+	bmd.br.			172800	IN	NS	e.dns.br.
+	bmd.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/blog.br.zone
+	custom-command /etc/bind/blog.br.zone
+	config {
+	blog.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	blog.br.			172800	IN	NS	a.dns.br.
+	blog.br.			172800	IN	NS	b.dns.br.
+	blog.br.			172800	IN	NS	c.dns.br.
+	blog.br.			172800	IN	NS	d.dns.br.
+	blog.br.			172800	IN	NS	e.dns.br.
+	blog.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/bio.br.zone
+	custom-command /etc/bind/bio.br.zone
+	config {
+	bio.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	bio.br.			172800	IN	NS	a.dns.br.
+	bio.br.			172800	IN	NS	b.dns.br.
+	bio.br.			172800	IN	NS	c.dns.br.
+	bio.br.			172800	IN	NS	d.dns.br.
+	bio.br.			172800	IN	NS	e.dns.br.
+	bio.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/b.br.zone
+	custom-command /etc/bind/b.br.zone
+	config {
+	b.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	b.br.			172800	IN	NS	a.dns.br.
+	b.br.			172800	IN	NS	b.dns.br.
+	b.br.			172800	IN	NS	c.dns.br.
+	b.br.			172800	IN	NS	d.dns.br.
+	b.br.			172800	IN	NS	e.dns.br.
+	b.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/ato.br.zone
+	custom-command /etc/bind/ato.br.zone
+	config {
+	ato.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	ato.br.			172800	IN	NS	a.dns.br.
+	ato.br.			172800	IN	NS	b.dns.br.
+	ato.br.			172800	IN	NS	c.dns.br.
+	ato.br.			172800	IN	NS	d.dns.br.
+	ato.br.			172800	IN	NS	e.dns.br.
+	ato.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/art.br.zone
+	custom-command /etc/bind/art.br.zone
+	config {
+	art.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	art.br.			172800	IN	NS	a.dns.br.
+	art.br.			172800	IN	NS	b.dns.br.
+	art.br.			172800	IN	NS	c.dns.br.
+	art.br.			172800	IN	NS	d.dns.br.
+	art.br.			172800	IN	NS	e.dns.br.
+	art.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/arq.br.zone
+	custom-command /etc/bind/arq.br.zone
+	config {
+	arq.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	arq.br.			172800	IN	NS	a.dns.br.
+	arq.br.			172800	IN	NS	b.dns.br.
+	arq.br.			172800	IN	NS	c.dns.br.
+	arq.br.			172800	IN	NS	d.dns.br.
+	arq.br.			172800	IN	NS	e.dns.br.
+	arq.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/am.br.zone
+	custom-command /etc/bind/am.br.zone
+	config {
+	am.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	am.br.			172800	IN	NS	a.dns.br.
+	am.br.			172800	IN	NS	b.dns.br.
+	am.br.			172800	IN	NS	c.dns.br.
+	am.br.			172800	IN	NS	d.dns.br.
+	am.br.			172800	IN	NS	e.dns.br.
+	am.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/agr.br.zone
+	custom-command /etc/bind/agr.br.zone
+	config {
+	agr.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	agr.br.			172800	IN	NS	a.dns.br.
+	agr.br.			172800	IN	NS	b.dns.br.
+	agr.br.			172800	IN	NS	c.dns.br.
+	agr.br.			172800	IN	NS	d.dns.br.
+	agr.br.			172800	IN	NS	e.dns.br.
+	agr.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/adv.br.zone
+	custom-command /etc/bind/adv.br.zone
+	config {
+	adv.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	adv.br.			172800	IN	NS	a.dns.br.
+	adv.br.			172800	IN	NS	b.dns.br.
+	adv.br.			172800	IN	NS	c.dns.br.
+	adv.br.			172800	IN	NS	d.dns.br.
+	adv.br.			172800	IN	NS	e.dns.br.
+	adv.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/adm.br.zone
+	custom-command /etc/bind/adm.br.zone
+	config {
+	adm.br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	adm.br.			172800	IN	NS	a.dns.br.
+	adm.br.			172800	IN	NS	b.dns.br.
+	adm.br.			172800	IN	NS	c.dns.br.
+	adm.br.			172800	IN	NS	d.dns.br.
+	adm.br.			172800	IN	NS	e.dns.br.
+	adm.br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/br.zone
+	custom-command /etc/bind/br.zone
+	config {
+	br.			172800	IN	SOA	a.dns.br. hostmaster.registro.br. 2013022890 1800 900 604800 900
+	br.			172800	IN	NS	a.dns.br.
+	br.			172800	IN	NS	b.dns.br.
+	br.			172800	IN	NS	c.dns.br.
+	br.			172800	IN	NS	d.dns.br.
+	br.			172800	IN	NS	e.dns.br.
+	br.			172800	IN	NS	f.dns.br.
+	a.dns.br.		172800	IN	A	200.160.0.10
+	a.dns.br.		172800	IN	AAAA	2001:12ff:0:0:0:0:0:10
+	b.dns.br.		172800	IN	A	200.189.41.10
+	c.dns.br.		172800	IN	A	200.192.233.10
+	d.dns.br.		172800	IN	A	200.219.154.10
+	d.dns.br.		172800	IN	AAAA	2001:12f8:4:0:0:0:0:10
+	e.dns.br.		172800	IN	A	200.229.248.10
+	e.dns.br.		172800	IN	AAAA	2001:12f8:1:0:0:0:0:10
+	f.dns.br.		172800	IN	A	200.219.159.10
+	ns.dns.br.		172800	IN	A	200.160.0.5
+	ns.dns.br.		172800	IN	AAAA	2001:12ff:0:a20:0:0:0:5
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.255
+	custom-command /etc/bind/db.255
+	config {
+	;
+	; BIND reverse data file for broadcast zone
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.0
+	custom-command /etc/bind/db.0
+	config {
+	;
+	; BIND reverse data file for broadcast zone
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.127
+	custom-command /etc/bind/db.127
+	config {
+	;
+	; BIND reverse data file for local loopback interface
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	1.0.0	IN	PTR	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.local
+	custom-command /etc/bind/db.local
+	config {
+	;
+	; BIND data file for local loopback interface
+	;
+	$TTL	604800
+	@	IN	SOA	localhost. root.localhost. (
+				      2		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	@	IN	A	127.0.0.1
+	@	IN	AAAA	::1
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.root
+	custom-command /etc/bind/db.root
+	config {
+	;       This file holds the information on root name servers needed to
+	;       initialize cache of Internet domain name servers
+	;       (e.g. reference this file in the "cache  .  <file>"
+	;       configuration file of BIND domain name servers).
+	;
+	;       This file is made available by InterNIC 
+	;       under anonymous FTP as
+	;           file                /domain/named.cache
+	;           on server           FTP.INTERNIC.NET
+	;       -OR-                    RS.INTERNIC.NET
+	;
+	;       last update:    Jun 17, 2010
+	;       related version of root zone:   2010061700
+	;
+	; formerly NS.INTERNIC.NET
+	;
+	.                        3600000  IN  NS    A.ROOT-SERVERS.NET.
+	A.ROOT-SERVERS.NET.      3600000      A     198.41.0.4
+	A.ROOT-SERVERS.NET.      3600000      AAAA  2001:503:BA3E::2:30
+	;
+	; FORMERLY NS1.ISI.EDU
+	;
+	.                        3600000      NS    B.ROOT-SERVERS.NET.
+	B.ROOT-SERVERS.NET.      3600000      A     192.228.79.201
+	;
+	; FORMERLY C.PSI.NET
+	;
+	.                        3600000      NS    C.ROOT-SERVERS.NET.
+	C.ROOT-SERVERS.NET.      3600000      A     192.33.4.12
+	;
+	; FORMERLY TERP.UMD.EDU
+	;
+	.                        3600000      NS    D.ROOT-SERVERS.NET.
+	D.ROOT-SERVERS.NET.      3600000      A     128.8.10.90
+	;
+	; FORMERLY NS.NASA.GOV
+	;
+	.                        3600000      NS    E.ROOT-SERVERS.NET.
+	E.ROOT-SERVERS.NET.      3600000      A     192.203.230.10
+	;
+	; FORMERLY NS.ISC.ORG
+	;
+	.                        3600000      NS    F.ROOT-SERVERS.NET.
+	F.ROOT-SERVERS.NET.      3600000      A     192.5.5.241
+	F.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:2F::F
+	;
+	; FORMERLY NS.NIC.DDN.MIL
+	;
+	.                        3600000      NS    G.ROOT-SERVERS.NET.
+	G.ROOT-SERVERS.NET.      3600000      A     192.112.36.4
+	;
+	; FORMERLY AOS.ARL.ARMY.MIL
+	;
+	.                        3600000      NS    H.ROOT-SERVERS.NET.
+	H.ROOT-SERVERS.NET.      3600000      A     128.63.2.53
+	H.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:1::803F:235
+	;
+	; FORMERLY NIC.NORDU.NET
+	;
+	.                        3600000      NS    I.ROOT-SERVERS.NET.
+	I.ROOT-SERVERS.NET.      3600000      A     192.36.148.17
+	I.ROOT-SERVERS.NET.      3600000      AAAA  2001:7FE::53
+	;
+	; OPERATED BY VERISIGN, INC.
+	;
+	.                        3600000      NS    J.ROOT-SERVERS.NET.
+	J.ROOT-SERVERS.NET.      3600000      A     192.58.128.30
+	J.ROOT-SERVERS.NET.      3600000      AAAA  2001:503:C27::2:30
+	;
+	; OPERATED BY RIPE NCC
+	;
+	.                        3600000      NS    K.ROOT-SERVERS.NET.
+	K.ROOT-SERVERS.NET.      3600000      A     193.0.14.129
+	K.ROOT-SERVERS.NET.      3600000      AAAA  2001:7FD::1
+	;
+	; OPERATED BY ICANN
+	;
+	.                        3600000      NS    L.ROOT-SERVERS.NET.
+	L.ROOT-SERVERS.NET.      3600000      A     199.7.83.42
+	L.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:3::42
+	;
+	; OPERATED BY WIDE
+	;
+	.                        3600000      NS    M.ROOT-SERVERS.NET.
+	M.ROOT-SERVERS.NET.      3600000      A     202.12.27.33
+	M.ROOT-SERVERS.NET.      3600000      AAAA  2001:DC3::35
+	; End of File
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf.default-zones
+	custom-command /etc/bind/named.conf.default-zones
+	config {
+	// prime the server with knowledge of the root servers
+	zone "." {
+		type hint;
+		file "/etc/bind/db.root";
+	};
+	
+	// be authoritative for the localhost forward and reverse zones, and for
+	// broadcast zones as per RFC 1912
+	
+	zone "localhost" {
+		type master;
+		file "/etc/bind/db.local";
+	};
+	
+	zone "127.in-addr.arpa" {
+		type master;
+		file "/etc/bind/db.127";
+	};
+	
+	zone "0.in-addr.arpa" {
+		type master;
+		file "/etc/bind/db.0";
+	};
+	
+	zone "255.in-addr.arpa" {
+		type master;
+		file "/etc/bind/db.255";
+	};
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/db.empty
+	custom-command /etc/bind/db.empty
+	config {
+	; BIND reverse data file for empty rfc1918 zone
+	;
+	; DO NOT EDIT THIS FILE - it is used for multiple zones.
+	; Instead, copy it, edit named.conf, and use that copy.
+	;
+	$TTL	86400
+	@	IN	SOA	localhost. root.localhost. (
+				      1		; Serial
+				 604800		; Refresh
+				  86400		; Retry
+				2419200		; Expire
+				  86400 )	; Negative Cache TTL
+	;
+	@	IN	NS	localhost.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/zones.rfc1918
+	custom-command /etc/bind/zones.rfc1918
+	config {
+	zone "10.in-addr.arpa"      { type master; file "/etc/bind/db.empty"; };
+	 
+	zone "16.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "17.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "18.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "19.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "20.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "21.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "22.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "23.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "24.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "25.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "26.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "27.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "28.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "29.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "30.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	zone "31.172.in-addr.arpa"  { type master; file "/etc/bind/db.empty"; };
+	
+	zone "168.192.in-addr.arpa" { type master; file "/etc/bind/db.empty"; };
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf.local
+	custom-command /etc/bind/named.conf.local
+	config {
+	//
+	// Do any local configuration here
+	//
+	
+	// Consider adding the 1918 zones here, if they are not used in your
+	// organization
+	include "/etc/bind/zones.rfc1918";
+	
+	zone "br"       { type master; file "/etc/bind/br.zone"; };
+	zone "adm.br"   { type master; file "/etc/bind/adm.br.zone"; };
+	zone "adv.br"   { type master; file "/etc/bind/adv.br.zone"; };
+	zone "agr.br"   { type master; file "/etc/bind/agr.br.zone"; };
+	zone "am.br"    { type master; file "/etc/bind/am.br.zone"; };
+	zone "arq.br"   { type master; file "/etc/bind/arq.br.zone"; };
+	zone "art.br"   { type master; file "/etc/bind/art.br.zone"; };
+	zone "ato.br"   { type master; file "/etc/bind/ato.br.zone"; };
+	zone "b.br"     { type master; file "/etc/bind/b.br.zone"; };
+	zone "bio.br"   { type master; file "/etc/bind/bio.br.zone"; };
+	zone "blog.br"  { type master; file "/etc/bind/blog.br.zone"; };
+	zone "bmd.br"   { type master; file "/etc/bind/bmd.br.zone"; };
+	zone "cim.br"   { type master; file "/etc/bind/cim.br.zone"; };
+	zone "cng.br"   { type master; file "/etc/bind/cng.br.zone"; };
+	zone "cnt.br"   { type master; file "/etc/bind/cnt.br.zone"; };
+	zone "com.br"   { type master; file "/etc/bind/com.br.zone"; };
+	zone "coop.br"  { type master; file "/etc/bind/coop.br.zone"; };
+	zone "ecn.br"   { type master; file "/etc/bind/ecn.br.zone"; };
+	zone "eco.br"   { type master; file "/etc/bind/eco.br.zone"; };
+	zone "emp.br"   { type master; file "/etc/bind/emp.br.zone"; };
+	zone "eng.br"   { type master; file "/etc/bind/eng.br.zone"; };
+	zone "esp.br"   { type master; file "/etc/bind/esp.br.zone"; };
+	zone "etc.br"   { type master; file "/etc/bind/etc.br.zone"; };
+	zone "eti.br"   { type master; file "/etc/bind/eti.br.zone"; };
+	zone "far.br"   { type master; file "/etc/bind/far.br.zone"; };
+	zone "flog.br"  { type master; file "/etc/bind/flog.br.zone"; };
+	zone "fm.br"    { type master; file "/etc/bind/fm.br.zone"; };
+	zone "fnd.br"   { type master; file "/etc/bind/fnd.br.zone"; };
+	zone "fot.br"   { type master; file "/etc/bind/fot.br.zone"; };
+	zone "fst.br"   { type master; file "/etc/bind/fst.br.zone"; };
+	zone "g12.br"   { type master; file "/etc/bind/g12.br.zone"; };
+	zone "ggf.br"   { type master; file "/etc/bind/ggf.br.zone"; };
+	zone "imb.br"   { type master; file "/etc/bind/imb.br.zone"; };
+	zone "ind.br"   { type master; file "/etc/bind/ind.br.zone"; };
+	zone "inf.br"   { type master; file "/etc/bind/inf.br.zone"; };
+	zone "jor.br"   { type master; file "/etc/bind/jor.br.zone"; };
+	zone "jus.br"   { type master; file "/etc/bind/jus.br.zone"; };
+	zone "leg.br"   { type master; file "/etc/bind/leg.br.zone"; };
+	zone "lel.br"   { type master; file "/etc/bind/lel.br.zone"; };
+	zone "mat.br"   { type master; file "/etc/bind/mat.br.zone"; };
+	zone "med.br"   { type master; file "/etc/bind/med.br.zone"; };
+	zone "mil.br"   { type master; file "/etc/bind/mil.br.zone"; };
+	zone "mp.br"    { type master; file "/etc/bind/mp.br.zone"; };
+	zone "mus.br"   { type master; file "/etc/bind/mus.br.zone"; };
+	zone "net.br"   { type master; file "/etc/bind/net.br.zone"; };
+	zone "nom.br"   { type master; file "/etc/bind/nom.br.zone"; };
+	zone "not.br"   { type master; file "/etc/bind/not.br.zone"; };
+	zone "ntr.br"   { type master; file "/etc/bind/ntr.br.zone"; };
+	zone "odo.br"   { type master; file "/etc/bind/odo.br.zone"; };
+	zone "org.br"   { type master; file "/etc/bind/org.br.zone"; };
+	zone "ppg.br"   { type master; file "/etc/bind/ppg.br.zone"; };
+	zone "pro.br"   { type master; file "/etc/bind/pro.br.zone"; };
+	zone "psc.br"   { type master; file "/etc/bind/psc.br.zone"; };
+	zone "psi.br"   { type master; file "/etc/bind/psi.br.zone"; };
+	zone "qsl.br"   { type master; file "/etc/bind/qsl.br.zone"; };
+	zone "radio.br" { type master; file "/etc/bind/radio.br.zone"; };
+	zone "rec.br"   { type master; file "/etc/bind/rec.br.zone"; };
+	zone "slg.br"   { type master; file "/etc/bind/slg.br.zone"; };
+	zone "srv.br"   { type master; file "/etc/bind/srv.br.zone"; };
+	zone "taxi.br"  { type master; file "/etc/bind/taxi.br.zone"; };
+	zone "teo.br"   { type master; file "/etc/bind/teo.br.zone"; };
+	zone "tmp.br"   { type master; file "/etc/bind/tmp.br.zone"; };
+	zone "trd.br"   { type master; file "/etc/bind/trd.br.zone"; };
+	zone "tur.br"   { type master; file "/etc/bind/tur.br.zone"; };
+	zone "tv.br"    { type master; file "/etc/bind/tv.br.zone"; };
+	zone "vet.br"   { type master; file "/etc/bind/vet.br.zone"; };
+	zone "vlog.br"  { type master; file "/etc/bind/vlog.br.zone"; };
+	zone "wiki.br"  { type master; file "/etc/bind/wiki.br.zone"; };
+	zone "zlg.br"   { type master; file "/etc/bind/zlg.br.zone"; };
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf.options
+	custom-command /etc/bind/named.conf.options
+	config {
+	options {
+		directory "/var/cache/bind";
+	
+		// If there is a firewall between you and nameservers you want
+		// to talk to, you may need to fix the firewall to allow multiple
+		// ports to talk.  See http://www.kb.cert.org/vuls/id/800113
+	
+		// If your ISP provided one or more IP addresses for stable 
+		// nameservers, you probably want to use them as forwarders.  
+		// Uncomment the following block, and insert the addresses replacing 
+		// the all-0's placeholder.
+	
+		// forwarders {
+		// 	0.0.0.0;
+		// };
+	
+		//========================================================================
+		// If BIND logs error messages about the root key being expired,
+		// you will need to update your keys.  See https://www.isc.org/bind-keys
+		//========================================================================
+		dnssec-validation no;
+	
+		auth-nxdomain no;    # conform to RFC1035
+		allow-query { any; };
+		listen-on { any; };
+		listen-on-v6 { any; };
+		recursion no;
+		root-delegation-only;
+	};
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf
+	custom-command /etc/bind/named.conf
+	config {
+	// This is the primary configuration file for the BIND DNS server named.
+	//
+	// Please read /usr/share/doc/bind9/README.Debian.gz for information on the 
+	// structure of BIND configuration files in Debian, *BEFORE* you customize 
+	// this configuration file.
+	//
+	// If you are just adding zones, please do that in /etc/bind/named.conf.local
+	
+	include "/etc/bind/named.conf.options";
+	include "/etc/bind/named.conf.local";
+	include "/etc/bind/named.conf.default-zones";
+	
+	}
+    }
+}
+
+node n7 {
+    type router
+    model router
+    network-config {
+	hostname n7Router
+	!
+	interface eth4
+	 ip address 199.212.0.1/24
+	 ipv6 address 2001:500:13::1/64
+	!
+	interface eth0
+	 ip address 198.51.100.1/25
+	 ipv6 address 2001:db8:feed::1/64
+	!
+	interface eth1
+	 ip address 198.51.100.129/25
+	 ipv6 address 2001:db8:f00d::1/64
+	!
+	interface eth2
+	 ip address 192.5.5.1/24
+	 ipv6 address 2001:500:2f::1/64
+	!
+	interface eth3
+	 ip address 200.229.248.1/24
+	 ipv6 address 2001:12f8:1::1/64
+	!
+    }
+    canvas c1
+    iconcoords {496.33333333333337 313.6666666666667}
+    labelcoords {569.3333333333334 327.6666666666667}
+    interface-peer {eth0 n3}
+    interface-peer {eth1 n11}
+    interface-peer {eth2 n4}
+    interface-peer {eth3 n6}
+    services {IPForward StaticRoute}
+    custom-config {
+	custom-config-id service:StaticRoute
+	custom-command StaticRoute
+	config {
+	files=('staticroute.sh', )
+	}
+    }
+    custom-config {
+	custom-config-id service:StaticRoute:staticroute.sh
+	custom-command staticroute.sh
+	config {
+	#!/bin/sh
+	/sbin/ip route add 192.0.2.0/24 via 198.51.100.2
+	/sbin/ip route add 203.0.113.0/24 via 198.51.100.130
+	/sbin/ip route add 2001:db8:ca5a::/48 via 2001:db8:feed::2
+	/sbin/ip route add 2001:db8:beba::/48 via 2001:db8:f00d::2
+	
+	}
+    }
+    interface-peer {eth4 n5}
+}
+
+node n8 {
+    type router
+    model host
+    network-config {
+	hostname n8AuthoritativeExemplo
+	!
+	interface eth0
+	 ipv6 address 2001:db8:beba:cafe::2/64
+	 ip address 203.0.113.2/24
+	!
+    }
+    canvas c1
+    iconcoords {833.3333333333333 211.0}
+    labelcoords {839.3333333333333 191.0}
+    services {DefaultRoute UserDefined}
+    custom-config {
+	custom-config-id service:UserDefined
+	custom-command UserDefined
+	config {
+	dirs=('/etc/bind', '/var/cache/bind', )
+	files=('/etc/bind/named.conf', '/etc/bind/exemplo.psi.br.zone', '/etc/bind/203.0.113.db', '/etc/bind/2001-db8-beba.db', )
+	cmdup=('named -c /etc/bind/named.conf', )
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/2001-db8-beba.db
+	custom-command /etc/bind/2001-db8-beba.db
+	config {
+	a.b.e.b.8.b.d.0.1.0.0.2.ip6.arpa. 86400 IN SOA ns.exemplo.psi.br. ipv6.nic.br. (
+	                                            2013022890 86400 3600 604800 86400 )
+	                                  86400 IN NS ns.exemplo.psi.br.
+	;; DNS server
+	2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.e.f.a.c 86400 IN PTR ns.exemplo.psi.br.
+	;; WWW server
+	;; SSH server
+	0.0.2.0.0.0.0.0.0.0.0.0.0.0.0.0.e.f.a.c 86400 IN PTR www.exemplo.psi.br.
+	;; Mail server
+	0.2.2.0.0.0.0.0.0.0.0.0.0.0.0.0.e.f.a.c 86400 IN PTR mail.exemplo.psi.br.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/203.0.113.db
+	custom-command /etc/bind/203.0.113.db
+	config {
+	113.0.203.in-addr.arpa. 86400 IN SOA ns.exemplo.psi.br. ipv6.nic.br. (
+	                                  2013022890 86400 3600 604800 86400 )
+	                86400 IN NS ns.exemplo.psi.br.
+	;; DNS server
+	2               86400 IN PTR ns.exemplo.psi.br.
+	;; WWW server
+	200             86400 IN PTR www.exemplo.psi.br.
+	;; Mail server
+	220             86400 IN PTR mail.exemplo.psi.br.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/exemplo.psi.br.zone
+	custom-command /etc/bind/exemplo.psi.br.zone
+	config {
+	exemplo.psi.br.	30 IN SOA ns.exemplo.psi.br. ipv6.nic.br. (
+	                            2013022890 1800 900 604800 60 )
+	                30 IN NS ns.exemplo.psi.br.
+	;; DNS server
+	ns              30 IN A 203.0.113.2
+	;; WWW server
+	www             30 IN A 203.0.113.200
+	;; Mail server
+	exemplo.psi.br. 30 IN MX 10 mail.exemplo.psi.br.
+	mail            30 IN A  203.0.113.220
+	;; SPF policy
+	                30 IN TXT "v=spf1 a mx ip4:203.0.113.220 -all"
+	                30 IN SPF "v=spf1 a mx ip4:203.0.113.220 -all"
+	;; SSH server
+	ssh             30 IN CNAME www.exemplo.psi.br.
+	
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/bind/named.conf
+	custom-command /etc/bind/named.conf
+	config {
+	options {
+	  allow-query { any; };
+	  listen-on { any; };
+	  recursion no;
+	};
+	
+	zone "exemplo.psi.br" {
+	  type master;
+	  file "/etc/bind/exemplo.psi.br.zone";
+	};
+	zone "113.0.203.in-addr.arpa" {
+	  type master;
+	  file "/etc/bind/203.0.113.db";
+	};
+	
+	}
+    }
+    interface-peer {eth0 n12}
+}
+
+node n9 {
+    type router
+    model host
+    network-config {
+	hostname n9WWWExemplo
+	!
+	interface eth0
+	 ip address 203.0.113.200/24
+	 ipv6 address 2001:db8:beba:cafe::200/64
+	!
+    }
+    canvas c1
+    iconcoords {947.3333333333333 371.3333333333333}
+    labelcoords {904.3333333333333 405.0}
+    services {DefaultRoute SSH UserDefined}
+    interface-peer {eth0 n12}
+    custom-config {
+	custom-config-id service:UserDefined
+	custom-command UserDefined
+	config {
+	dirs=('/run/lock', '/var/log/nginx', '/etc/nginx/sites-available', )
+	files=('/etc/nginx/sites-available/default', )
+	cmdup=('/etc/init.d/nginx start', )
+	}
+    }
+    custom-config {
+	custom-config-id service:UserDefined:/etc/nginx/sites-available/default
+	custom-command /etc/nginx/sites-available/default
+	config {
+	# You may add here your
+	# server {
+	#	...
+	# }
+	# statements for each of your virtual hosts to this file
+	
+	##
+	# You should look at the following URL's in order to grasp a solid understanding
+	# of Nginx configuration files in order to fully unleash the power of Nginx.
+	# http://wiki.nginx.org/Pitfalls
+	# http://wiki.nginx.org/QuickStart
+	# http://wiki.nginx.org/Configuration
+	#
+	# Generally, you will want to move this file somewhere, and start with a clean
+	# file but keep this around for reference. Or just disable in sites-enabled.
+	#
+	# Please see /usr/share/doc/nginx-doc/examples/ for more detailed examples.
+	##
+	
+	server {
+		#listen 80; ## listen for ipv4; default and implied
+		#listen [::]:80 default ipv6only=on; ## listen for ipv6
+	
+		root /usr/share/nginx/www;
+		index index.html index.htm;
+	
+		# Make site accessible from http://localhost/
+		server_name localhost;
+	
+		location / {
+			# First attempt to serve request as file, then
+			# as directory, then fall back to index.html
+			try_files $uri $uri/ /index.html;
+			# Uncomment to enable naxsi on this location
+			# include /etc/nginx/naxsi.rules
+		}
+	
+		location /doc/ {
+			alias /usr/share/doc/;
+			autoindex on;
+			allow 127.0.0.1;
+			deny all;
+		}
+	
+		# Only for nginx-naxsi : process denied requests
+		#location /RequestDenied {
+			# For example, return an error code
+			#return 418;
+		#}
+	
+		#error_page 404 /404.html;
+	
+		# redirect server error pages to the static page /50x.html
+		#
+		#error_page 500 502 503 504 /50x.html;
+		#location = /50x.html {
+		#	root /usr/share/nginx/www;
+		#}
+	
+		# pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+		#
+		#location ~ \.php$ {
+		#	fastcgi_split_path_info ^(.+\.php)(/.+)$;
+		#	# NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
+		#
+		#	# With php5-cgi alone:
+		#	fastcgi_pass 127.0.0.1:9000;
+		#	# With php5-fpm:
+		#	fastcgi_pass unix:/var/run/php5-fpm.sock;
+		#	fastcgi_index index.php;
+		#	include fastcgi_params;
+		#}
+	
+		# deny access to .htaccess files, if Apache's document root
+		# concurs with nginx's one
+		#
+		#location ~ /\.ht {
+		#	deny all;
+		#}
+	}
+	
+	
+	# another virtual host using mix of IP-, name-, and port-based configuration
+	#
+	#server {
+	#	listen 8000;
+	#	listen somename:8080;
+	#	server_name somename alias another.alias;
+	#	root html;
+	#	index index.html index.htm;
+	#
+	#	location / {
+	#		try_files $uri $uri/ /index.html;
+	#	}
+	#}
+	
+	
+	# HTTPS server
+	#
+	#server {
+	#	listen 443;
+	#	server_name localhost;
+	#
+	#	root html;
+	#	index index.html index.htm;
+	#
+	#	ssl on;
+	#	ssl_certificate cert.pem;
+	#	ssl_certificate_key cert.key;
+	#
+	#	ssl_session_timeout 5m;
+	#
+	#	ssl_protocols SSLv3 TLSv1;
+	#	ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv3:+EXP;
+	#	ssl_prefer_server_ciphers on;
+	#
+	#	location / {
+	#		try_files $uri $uri/ /index.html;
+	#	}
+	#}
+	
+	}
+    }
+}
+
+node n10 {
+    type router
+    model host
+    network-config {
+	hostname n10MailExemplo
+	!
+	interface eth0
+	 ip address 203.0.113.220/24
+	 ipv6 address 2001:db8:beba:cafe::220/64
+	!
+    }
+    canvas c1
+    iconcoords {949.0 286.3333333333333}
+    labelcoords {914.0 258.3333333333333}
+    interface-peer {eth0 n12}
+    services {DefaultRoute SSH}
+}
+
+node n11 {
+    type router
+    model router
+    network-config {
+	hostname n11Router
+	!
+	interface eth1
+	 ipv6 address 2001:db8:beba:cafe::1/64
+	 ip address 203.0.113.1/24
+	!
+	interface eth0
+	 ip address 198.51.100.130/25
+	 ipv6 address 2001:db8:f00d::2/64
+	!
+    }
+    canvas c1
+    iconcoords {707.3333333333334 258.0}
+    labelcoords {709.0 237.33333333333334}
+    interface-peer {eth0 n7}
+    services {IPForward StaticRoute}
+    custom-config {
+	custom-config-id service:StaticRoute
+	custom-command StaticRoute
+	config {
+	files=('staticroute.sh', )
+	}
+    }
+    custom-config {
+	custom-config-id service:StaticRoute:staticroute.sh
+	custom-command staticroute.sh
+	config {
+	#!/bin/sh
+	/sbin/ip route add 192.5.5.0/24 via 198.51.100.129
+	/sbin/ip route add 199.212.0.0/24 via 198.51.100.129
+	/sbin/ip route add 200.229.248.0/24 via 198.51.100.129
+	/sbin/ip route add 192.0.2.0/24 via 198.51.100.129
+	/sbin/ip route add 203.0.113.0/24 dev eth1
+	/sbin/ip route add 2001:500:13::/64 via 2001:db8:f00d::1
+	/sbin/ip route add 2001:500:2f::/64 via 2001:db8:f00d::1
+	/sbin/ip route add 2001:12f8:1::/64 via 2001:db8:f00d::1
+	/sbin/ip route add 2001:db8:ca5a::/48 via 2001:db8:f00d::1
+	/sbin/ip route add 2001:db8:beba::/48 dev eth1
+	
+	}
+    }
+    interface-peer {eth1 n12}
+}
+
+node n12 {
+    type lanswitch
+    network-config {
+	hostname n12Switch
+	!
+    }
+    canvas c1
+    iconcoords {779.3333333333333 378.0}
+    labelcoords {778.0 363.0}
+    interface-peer {e0 n11}
+    interface-peer {e1 n8}
+    interface-peer {e2 n10}
+    interface-peer {e3 n9}
+}
+
+link l1 {
+    nodes {n1 n3}
+    bandwidth 0
+}
+
+link l2 {
+    nodes {n2 n3}
+    bandwidth 0
+}
+
+link l3 {
+    nodes {n4 n7}
+    bandwidth 0
+}
+
+link l4 {
+    nodes {n7 n6}
+    bandwidth 0
+}
+
+link l5 {
+    nodes {n11 n12}
+    bandwidth 0
+}
+
+link l6 {
+    nodes {n12 n8}
+    bandwidth 0
+}
+
+link l7 {
+    nodes {n3 n7}
+    bandwidth 0
+}
+
+link l8 {
+    nodes {n7 n11}
+    bandwidth 0
+}
+
+link l9 {
+    nodes {n5 n7}
+    bandwidth 0
+}
+
+link l10 {
+    nodes {n12 n10}
+    bandwidth 0
+}
+
+link l11 {
+    nodes {n12 n9}
+    bandwidth 0
+}
+
+annotation a4 {
+    iconcoords {802.0 413.33333333333337}
+    type text
+    label {www.exemplo.psi.br}
+    labelcolor black
+    fontfamily {Arial}
+    fontsize {12}
+    canvas c1
+}
+
+annotation a5 {
+    type text
+    iconcoords {680.0 340.0}
+    label {}
+    canvas c1
+}
+
+canvas c1 {
+    name {Canvas1}
+    wallpaper-style {upperleft}
+    wallpaper {/home/ipv6br/core-dns-e-web7.png}
+    size {1280 1440}
+}
+
+hook 4:runtime_hook.sh {
+#!/bin/sh
+# session hook script; write commands here to execute on the host at the
+# specified state
+test '! -f /etc/resolv.conf' && touch /etc/resolv.conf
+test '! -L /etc/resolv.conf' && rm /etc/resolv.conf 2>> /dev/null && ln -s /var/run/resolvconf/resolv.conf /etc/resolv.conf
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+option global {
+    interface_names no
+    ip_addresses yes
+    ipv6_addresses no
+    node_labels yes
+    link_labels yes
+    show_api no
+    background_images no
+    annotations yes
+    grid no
+    traffic_start 0
+}
+
+option session {
+}
+
