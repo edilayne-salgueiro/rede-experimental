@@ -1,4 +1,4 @@
-node n1 {  
+node n1 {
     type router
     model PC
     network-config {
@@ -4552,7 +4552,7 @@ annotation a5 {
 canvas c1 {
     name {Canvas1}
     wallpaper-style {upperleft}
-    wallpaper {/home/ipv6br/core-dns-e-web6.png}
+    wallpaper {/home/ipv6br/teste/rede-experimental_back/core-dns-e-web6.png}
     size {1280 1440}
 }
 
@@ -4562,6 +4562,7 @@ hook 4:runtime_hook.sh {
 # specified state
 test '! -f /etc/resolv.conf' && touch /etc/resolv.conf
 test '! -L /etc/resolv.conf' && rm /etc/resolv.conf 2>> /dev/null && ln -s /var/run/resolvconf/resolv.conf /etc/resolv.conf
+
 
 
 
